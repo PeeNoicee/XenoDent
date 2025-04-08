@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AuthControl;
+use App\Http\Controllers\PageController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -23,9 +24,10 @@ require __DIR__.'/auth.php';
 
 
 
-//For Xray App
-
+//For Xray App Auth User Controller
 Route::get('/xrayLanding/{id}',[AuthControl::class, 'getLandingPage']);
-Route::get('/homepage',[AuthControl::class, 'home'])->name('homepage');
-Route::get('/premiumPage',[AuthControl::class, 'premium'])->name('premium');
 Route::match(['get','patch','post'],'/updateUSer',[AuthControl::class, 'updateUSer'])->name('updateUSer');
+
+//For Pages
+Route::get('/homepage',[PageController::class, 'home'])->name('homepage');
+Route::get('/premiumPage',[PageController::class, 'premium'])->name('premium');
