@@ -33,6 +33,8 @@ class PageController extends Controller
         return view('premiumPage');
     }
 
-
+    public function xrayPage(){
+        return view('');
+    }
 
 }
