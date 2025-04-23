@@ -26,6 +26,7 @@ class PageController extends Controller
         return view('premiumPage');
     }
 
+
     public function xray(){
 
         $prem = $this->ifPrem();

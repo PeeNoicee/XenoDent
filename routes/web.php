@@ -37,3 +37,4 @@ Route::match(['get','patch','post'],'/xrayPage', [PageController::class, 'xray']
 //For Xray image API
 Route::match(['get','patch','post'],'/uploadImage', [XrayControl::class, 'upload'])->name('upload');
 Route::match(['get','patch','post'],'/getImages', [XrayControl::class, 'getImages'])->name('getImages');
+
