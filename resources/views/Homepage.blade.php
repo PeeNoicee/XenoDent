@@ -70,10 +70,9 @@
                         <br> with ease.
                     </p>
 
-
                 
                         <h1 style = "margin: 70px 0px 0px 15%; font-size: 16px">Click
-                            <a>
+                            <a href = "{{url ('xrayPage') }}">
                                 <button class="btn btn-outline-success">BEGIN</button>
                             </a>
 

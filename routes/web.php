@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AuthControl;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\XrayControl;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -31,3 +32,8 @@ Route::match(['get','patch','post'],'/updateUSer',[AuthControl::class, 'updateUS
 //For Pages
 Route::get('/homepage',[PageController::class, 'home'])->name('homepage');
 Route::get('/premiumPage',[PageController::class, 'premium'])->name('premium');
+Route::match(['get','patch','post'],'/xrayPage', [PageController::class, 'xray'])->name('xray');
+
+//For Xray image API
+Route::match(['get','patch','post'],'/uploadImage', [XrayControl::class, 'upload'])->name('upload');
+Route::match(['get','patch','post'],'/getImages', [XrayControl::class, 'getImages'])->name('getImages');
