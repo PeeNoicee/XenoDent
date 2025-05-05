@@ -15,10 +15,10 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    <x-nav-link>
+                    <x-nav-link :href="route('about')" :active="request()->routeIs('about')">
                         {{ __('About XenoDent') }}
                     </x-nav-link>
-                    <x-nav-link>
+                    <x-nav-link :href="route('how-to-use')" :active="request()->routeIs('how-to-use')">
                         {{ __('How to Use') }}
                     </x-nav-link>
 
