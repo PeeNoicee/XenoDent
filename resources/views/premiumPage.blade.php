@@ -1,24 +1,40 @@
 @extends('layouts.xrayapp')
 
 @section('content')
+<style>
+    .modal-dialog {
+        max-width: 600px;  /* Adjust the width of the modal */
+        margin: 30px auto; /* Center the modal */
+    }
 
-<!-- Modal -->
+    .modal-body {
+        font-size: 16px;
+        color: #333;
+        text-align: center;
+    }
+
+    .modal-footer {
+        justify-content: center;
+    }
+</style>
+<!-- Modal Structure -->
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">THANK YOU</h5>
+        <h5 class="modal-title" id="exampleModalLabel">THANK YOU</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         PURCHASE SUCCESS!
       </div>
       <div class="modal-footer">
-        <a href="{{ route('homepage') }}" class="btn btn-primary">Continue</a>
+        <a href="{{ url('homepage') }}" class="btn btn-primary">Continue</a>
       </div>
     </div>
   </div>
 </div>
+
 
 <div id="fade">
     <!-- Navbar -->
@@ -84,30 +100,42 @@
     });
 
     document.getElementById('updateUserForm').addEventListener('submit', function(e) {
-        e.preventDefault();
+        e.preventDefault(); // Prevent the default form submission
 
-        const form = e.target;
-        const url = form.action;
-        const formData = new FormData(form);
+        let form = e.target;
+        let url = form.action;
+        let formData = new FormData(form);
 
         fetch(url, {
-            method: 'POST', // Send as POST since PATCH isn't supported by all browsers
+            method: 'PATCH',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                'Accept': 'application/json'
+                'Accept': 'application/json',
             },
-            body: formData
+            body: formData,
         })
-        .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            // Show success modal
-            const modal = new bootstrap.Modal(document.getElementById('exampleModal'));
-            modal.show();
+        .then(response => response.json()) // Parse the JSON response from the server
+        .then(data => {
+            if (data.message) {
+                // Show the success modal
+                let modal = new bootstrap.Modal(document.getElementById('exampleModal'));
+                modal.show();
+
+                // Redirect to the homepage after the modal is closed
+                document.querySelector('.btn-primary').addEventListener('click', function() {
+                    window.location.href = '{{ url('homepage') }}';  // Redirect to homepage or any route you want
+                });
+            } else if (data.error) {
+                // Handle any errors (e.g., show an error message)
+                alert(data.error);
+            }
         })
         .catch(error => {
             console.error('Error:', error);
             alert('Something went wrong while processing your purchase.');
         });
     });
+
+
 </script>
 @endsection

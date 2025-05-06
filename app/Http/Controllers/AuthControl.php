@@ -37,18 +37,15 @@ class AuthControl extends Controller
 
         }else{
 
-            $customerDetails = authUser::updateOrCreate(
-
-                ['user_id' => $userId],
-                [
-                    'name' => Auth::user()->name,
-                    'user_id' => Auth::user()->id,
-                    'authenticated' => 0,
-                    'edited_by' => Auth::user()->name,
-                ]
-          
-
-            );
+        // Only create if the record doesn't exist
+        authUser::firstOrCreate(
+            ['user_id' => $userId],
+            [
+                'name' => Auth::user()->name,
+                'authenticated' => 0,
+                'edited_by' => Auth::user()->name,
+            ]
+        );
 
             $set = "Done";
             
@@ -83,22 +80,30 @@ class AuthControl extends Controller
         return view('premiumPage');
     }
 
-    public function updateUSer(){
-
+    // When the user logs in or updates premium status
+    public function updateUser()
+    {
+        // Update or create the 'ai_auth' record for the user
         $customerDetails = authUser::updateOrCreate(
-
-            ['user_id' => Auth::user()->id],
+            ['user_id' => Auth::user()->id],  // Unique constraint for user
             [
                 'name' => Auth::user()->name,
                 'user_id' => Auth::user()->id,
-                'authenticated' => 1,
+                'authenticated' => 1,  // Set premium status to 1
                 'edited_by' => Auth::user()->name,
             ]
-      
-
         );
-
-        
+    
+        // Save premium status in session
+        session(['premium' => $customerDetails->authenticated]);
+    
+        // Return a success message to the frontend
+        return response()->json([
+            'message' => 'Purchase successful!',
+        ]);
     }
+    
+
+    
 
 }

@@ -67,7 +67,6 @@
             </div>
         </div>
     </nav>
-
     </div>
 
     <!-- Content Section -->

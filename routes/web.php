@@ -41,3 +41,6 @@ Route::match(['get','patch','post'],'/getImages', [XrayControl::class, 'getImage
 
 Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/how-to-use', [PageController::class, 'howToUse'])->name('how-to-use');
+
+
+Route::patch('updateUser', [AuthControl::class, 'updateUser'])->name('updateUser');
