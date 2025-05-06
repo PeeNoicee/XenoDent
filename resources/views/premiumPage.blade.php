@@ -1,7 +1,23 @@
 @extends('layouts.xrayapp')
 
 @section('content')
+<style>
+    .modal-dialog {
+        max-width: 600px;  /* Adjust the width of the modal */
+        margin: 30px auto; /* Center the modal */
+    }
 
+    .modal-body {
+        font-size: 16px;
+        color: #333;
+        text-align: center;
+    }
+
+    .modal-footer {
+        justify-content: center;
+    }
+</style>
+<!-- Modal Structure -->
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -13,87 +29,78 @@
         PURCHASE SUCCESS!
       </div>
       <div class="modal-footer">
-        <a href="{{url ('homepage') }}" class="btn btn-primary">Continue</a>
+        <a href="{{ url('homepage') }}" class="btn btn-primary">Continue</a>
       </div>
     </div>
   </div>
 </div>
 
 
-
-
-<div id = "fade">
-
-    <div class = "col" style = "margin-top: 10px">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+<div id="fade">
+    <!-- Navbar -->
+    <nav nav class="navbar navbar-expand-lg" style="background-color: #1F2937;">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{url ('dashboard') }}">DENTAL LOGO</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
+            <a href="{{ route('premium') }}">
+                <x-application-logo class="block h-9 w-auto fill-current text-gray-100" />
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{url ('homepage') }}">Go back to homepage</a>
-                </li>
-            </ul>
-
-            </div>
-        </div>
-        </nav>
-    </div>
-
-    <div class = "d-flex justify-content-center" style = "margin-top: 80px">
-
-        <div style = "background-color: #AEACAC; height: 600px; width: 500px; padding: 25px 25px 25px 25px">
-            
-            <p class = "row" style = "margin-left: 35%">
-                PREMIUM PACKAGE
-            </p>
-
-            <div class = "row" style = "margin-left: 15%; margin-top: 10%">
-                <ul class="ms-3">
-                    <li class="mb-1">1. EXTRA RAM FOR AI ANALYSIS</li>
-                    <li class="mb-1">2. EXTRA STORAGE FOR AI ANALYSIS</li>
-                    <li class="mb-1">3. BETTER AI MODEL</li>
-                    <li class="mb-1">4. DIRECT SUPPORT</li>
-                    <li class="mb-1">5. FEATURE REQUESTS</li>
-                    <li class="mb-1">6. TEST</li>
-                    <li class="mb-1">7. TEST</li>
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('homepage') }}">Go back to homepage</a>
+                    </li>
                 </ul>
             </div>
-
-            <form id="updateUserForm" action="{{url('updateUSer')}}" method = "PATCH" enctype="multipart/form-data">
-                @csrf
-                @method('patch')
-
-                <div>
-                    <button type="submit" class="btn btn-outline-success" style = "margin-left: 75%; margin-top: 130px">PURCHASE</button>
-                </div>
-
-            </form>
-            
         </div>
+    </nav>
 
+    <!-- Premium Card -->
+    <div class="d-flex justify-content-center mt-5">
+        <div class="card shadow-lg" style="background-color: #374151; width: 500px; border-radius: 1rem;">
+            <div class="card-body">
+                <h4 class="text-center mb-4 text-light">PREMIUM PACKAGE</h4>
 
-    
+                <ol class="ms-4 text-light">
+                    <li>EXTRA RAM FOR AI ANALYSIS</li>
+                    <li>EXTRA STORAGE FOR AI ANALYSIS</li>
+                    <li>BETTER AI MODEL</li>
+                    <li>DIRECT SUPPORT</li>
+                    <li>FEATURE REQUESTS</li>
+                    <li>TEST</li>
+                    <li>TEST</li>
+                </ol>
+
+                <!-- Purchase Form -->
+                <form id="updateUserForm" action="{{ url('updateUser') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    @method('PATCH')
+
+                    <div class="text-end mt-4">
+                        <button type="submit" class="btn btn-outline-success" style="border-radius: 0.5rem;">PURCHASE</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
-    
-</div>
 
+
+</div>
 
 @endsection
 
 @section('script')
-
 <script>
     window.addEventListener('load', () => {
         document.getElementById('fade').classList.add('loaded');
     });
 
     document.getElementById('updateUserForm').addEventListener('submit', function(e) {
-        e.preventDefault(); 
+        e.preventDefault(); // Prevent the default form submission
 
         let form = e.target;
         let url = form.action;
@@ -103,15 +110,25 @@
             method: 'PATCH',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                'Accept': 'application/json'
+                'Accept': 'application/json',
             },
-            body: formData
+            body: formData,
         })
-        .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            //return response.json(); 
-            let modal = new bootstrap.Modal(document.getElementById('exampleModal'));
-            modal.show();
+        .then(response => response.json()) // Parse the JSON response from the server
+        .then(data => {
+            if (data.message) {
+                // Show the success modal
+                let modal = new bootstrap.Modal(document.getElementById('exampleModal'));
+                modal.show();
+
+                // Redirect to the homepage after the modal is closed
+                document.querySelector('.btn-primary').addEventListener('click', function() {
+                    window.location.href = '{{ url('homepage') }}';  // Redirect to homepage or any route you want
+                });
+            } else if (data.error) {
+                // Handle any errors (e.g., show an error message)
+                alert(data.error);
+            }
         })
         .catch(error => {
             console.error('Error:', error);
@@ -120,7 +137,5 @@
     });
 
 
-
 </script>
-
 @endsection

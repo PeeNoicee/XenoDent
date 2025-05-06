@@ -9,18 +9,25 @@ use Illuminate\Support\Facades\Auth;
 class PageController extends Controller
 {
 
-    public function home(){
+    public function home() {
 
-        $welcome = "WELCOME CUSTOMER!";
+        // Fetch the user's name
+        $userName = Auth::user()->name;
+    
+        // Check if the user is premium
         $prem = $this->ifPrem();
-
-        if(!is_null($prem)){
-            $welcome = "WELCOME PREMIUM!";
+    
+        if (!is_null($prem) && $prem !== 0) {
+            // If premium, include the user's name and indicate they are premium
+            $welcome = "Welcome Dr. " . $userName . " (PREMIUM)";
+        } else {
+            // If not premium, greet the user with their name as a customer
+            $welcome = "Welcome Dr. " . $userName . " (CUSTOMER)";
         }
-         
-
+    
         return view('Homepage', Compact('welcome', 'prem'));
     }
+    
 
     public function premium(){
         return view('premiumPage');
@@ -48,5 +55,12 @@ class PageController extends Controller
     }
 
 
+    public function about() {
+        return view('about');
+    }
+
+    public function howToUse() {
+        return view('how-to-use');
+    }
 
 }

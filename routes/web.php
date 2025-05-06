@@ -34,7 +34,13 @@ Route::get('/homepage',[PageController::class, 'home'])->name('homepage');
 Route::get('/premiumPage',[PageController::class, 'premium'])->name('premium');
 Route::match(['get','patch','post'],'/xrayPage', [PageController::class, 'xray'])->name('xray');
 
+
 //For Xray image API
 Route::match(['get','patch','post'],'/uploadImage', [XrayControl::class, 'upload'])->name('upload');
 Route::match(['get','patch','post'],'/getImages', [XrayControl::class, 'getImages'])->name('getImages');
 
+Route::get('/about', [PageController::class, 'about'])->name('about');
+Route::get('/how-to-use', [PageController::class, 'howToUse'])->name('how-to-use');
+
+
+Route::patch('updateUser', [AuthControl::class, 'updateUser'])->name('updateUser');
