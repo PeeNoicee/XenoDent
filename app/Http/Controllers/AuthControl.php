@@ -58,24 +58,26 @@ class AuthControl extends Controller
         return $set;
     }
 
-    public function home(){
-
-        $welcome = "WELCOME CUSTOMER!";
+    public function home() {
+        // Fetch the user's name
+        $userName = Auth::user()->name;
+    
+        // Check if the user is authenticated as a premium user
         $prem = authUser::select()->where('user_id', Auth::user()->id)
         ->where('authenticated', 1)->first();
-
-        if(is_null($prem)){
-
-            $welcome = "WELCOME CUSTOMER!";
+    
+        if (is_null($prem)) {
+            // If the user is not premium, greet with the name
+            $welcome = "WELCOME " . $userName . "!";
             $prem = 0;
-
-        }else{
-
-            $welcome = "WELCOME PREMIUM USER!";
+        } else {
+            // If the user is premium, greet with the name and indicate they are a premium user
+            $welcome = "WELCOME " . $userName . " (PREMIUM USER)!";
         }
-
+    
         return view('Homepage', Compact('welcome', 'prem'));
     }
+    
 
     public function premium(){
         return view('premiumPage');
