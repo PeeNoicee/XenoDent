@@ -26,14 +26,13 @@ require __DIR__.'/auth.php';
 
 
 //For Xray App Auth User Controller
-Route::get('/xrayLanding/{id}',[AuthControl::class, 'getLandingPage']);
+Route::get('/xrayLanding/{id}', [AuthControl::class, 'getLandingPage'])->name('xrayLanding');
 Route::match(['get','patch','post'],'/updateUSer',[AuthControl::class, 'updateUSer'])->name('updateUSer');
 
 //For Pages
 Route::get('/homepage',[PageController::class, 'home'])->name('homepage');
-Route::get('/premiumPage',[PageController::class, 'premium'])->name('premium');
+Route::get('/premiumPage', [PageController::class, 'premium'])->name('premiumPage');
 Route::match(['get','patch','post'],'/xrayPage', [PageController::class, 'xray'])->name('xray');
-
 
 //For Xray image API
 Route::match(['get','patch','post'],'/uploadImage', [XrayControl::class, 'upload'])->name('upload');
@@ -41,3 +40,5 @@ Route::match(['get','patch','post'],'/getImages', [XrayControl::class, 'getImage
 
 Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/how-to-use', [PageController::class, 'howToUse'])->name('how-to-use');
+
+Route::patch('/updateUser', [AuthControl::class, 'updateUser'])->name('updateUser');

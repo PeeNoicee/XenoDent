@@ -3,45 +3,41 @@
 @section('content')
 
 <!-- Modal -->
+<style>
+    .modal-dialog {
+        max-width: 600px;  /* Adjust the width of the modal */
+        margin: 30px auto; /* Center the modal */
+    }
+
+    .modal-body {
+        font-size: 16px;
+        color: #333;
+        text-align: center;
+    }
+
+    .modal-footer {
+        justify-content: center;
+    }
+</style>
+
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">THANK YOU</h5>
+        <h5 class="modal-title" id="exampleModalLabel">THANK YOU</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         PURCHASE SUCCESS!
       </div>
       <div class="modal-footer">
-        <a href="{{ route('homepage') }}" class="btn btn-primary">Continue</a>
+        <a href="{{ url('homepage') }}" class="btn btn-primary">Continue</a>
       </div>
     </div>
   </div>
 </div>
 
 <div id="fade">
-    <!-- Navbar -->
-    <nav nav class="navbar navbar-expand-lg" style="background-color: #1F2937;">
-        <div class="container-fluid">
-            <a href="{{ route('premium') }}">
-                <x-application-logo class="block h-9 w-auto fill-current text-gray-100" />
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('homepage') }}">Go back to homepage</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
     <!-- Premium Card -->
     <div class="d-flex justify-content-center mt-5">
         <div class="card shadow-lg" style="background-color: #374151; width: 500px; border-radius: 1rem;">

@@ -41,12 +41,13 @@
             visibility: visible !important;
         }
     </style>
-
-    <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
 <body>
+    @if(!request()->routeIs('xrayLanding'))
+        @include('layouts.xraynavigation', ['prem' => $prem ?? 0])
+    @endif
 
     <div class="container">
         @yield('content')
