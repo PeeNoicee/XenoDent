@@ -45,3 +45,5 @@ Route::patch('/updateUser', [AuthControl::class, 'updateUser'])->name('updateUse
 
 //Uploading Xray image
 Route::post('/upload', [App\Http\Controllers\XrayControl::class, 'upload'])->name('upload');
+
+Route::post('/analyze', [XrayControl::class, 'analyze'])->name('analyze');
