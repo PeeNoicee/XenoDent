@@ -2,136 +2,98 @@
 
 @section('content')
 
-        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Image upload</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-
-                        <div id="image-preview-container" style="margin-top: 20px;">
-                            <img id="image-preview" src="" alt="Image Preview" style="max-width: 400px; display:none;">
-                        </div>
-                        
-                        <form id="xray-upload-form" enctype="multipart/form-data">
-                            @csrf
-                            <input type="file" name="image" id="image-input" >
-                           
-                        
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Save changes</button>
-
-                        </form>
-
-
-                    </div>
-                </div>
+<div class="container my-4">
+    <div class="row">
+        <!-- Left Side (Buttons) -->
+        <div class="col-md-4">
+            <div class="button-container">
+                <button type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" class="btn btn-outline-success mb-3 w-100">UPLOAD</button>
+                <button class="btn btn-outline-primary w-100 mb-3">ANALYZE</button>
+                <button id="toggle-gallery" class="btn btn-outline-secondary w-100">Show X-ray Gallery</button>
             </div>
         </div>
 
-
-
-
-
-<div>
-
-
-    <div class = "col" style = "margin-top: 10px">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{url ('dashboard') }}">DENTAL LOGO</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Actions
-                </a>
-                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                    <li><a class="dropdown-item" href="#">Analytics</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="#">X-ray AI</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    @if($prem === 0)
-                        <li><a class="dropdown-item disabled" href="">For Premium user</a></li>
-                    @else
-                        <li><a class="dropdown-item" href="">Feature Request</a></li>
-                    @endif
-                </ul>
-                </li>
-            </ul>
-
-            @if($prem === 0)
-                <div class="d-flex">
-                    <a href = "{{url ('premiumPage') }}">
-                    <button class="btn btn-outline-success">Go PREMIUM</button>
-                    </a>
-                </div>
-            @else
-
-                <div class="d-flex">
-                    <a >
-                    <button class="btn btn-outline-success">Need Support?</button>
-                    </a>
-                </div>
-
-            @endif
+        <!-- Right Side (X-ray Preview) -->
+        <div class="col-md-8">
+            <div id="xray-preview" class="xray-preview">
+                <p>No Image Selected</p>
             </div>
+            <div id="gallery-dropdown" class="gallery-dropdown"></div>
         </div>
-        </nav>
     </div>
+</div>
 
-    <div class = 'container' style = "margin: 20px 0px 0px 5px">
-
-        <div class = 'row '>
-
-            <div class = 'col'>
-
-                <div style = 'height: 500px; width: 650px; margin: 5% 0px 0px 10%;'>
-                    <div id="xray-preview" style="margin-top: 20px;"></div>
-                </div>
-
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Image Upload</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-
-
-            <div class = 'col'>
-                <div style = 'background-color: #AEACAC; height: 500px; width: 650px; margin: 5% 0px 0px 0px;'>
-                    <h1>IMG HERE</h1>
-                </div>
+            <div class="modal-body">
+                <form id="xray-upload-form" enctype="multipart/form-data">
+                    @csrf
+                    <input type="file" name="image" id="image-input" class="form-control mt-2">
             </div>
-
-            <div class = 'row'>
-                <a >
-                <button type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" class="btn btn-outline-success" style = "margin: 5% 0px 0px 5%;">UPLOAD</button>
-                </a>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Save changes</button>
+                </form>
             </div>
-
-            <div class = 'row'>
-                <a>
-                <button class="btn btn-outline-success" style = "margin: 15px 0px 0px 5%;">ANALYZE</button>
-                </a>
-            </div>
-
-            <div class = 'row'>
-
-                <button id="toggle-gallery" style="margin-top: 20px;">Show X-ray Gallery</button>
-                <div id="gallery-dropdown" style="display: none; max-height: 300px; overflow-y: auto; border: 1px solid #ccc; margin-top: 10px; padding: 10px;"></div>
-
-            </div>
-
         </div>
-        
     </div>
-
 </div>
 
 @endsection
+
+@section('style')
+<style>
+    .xray-preview {
+        background-color: #f4f4f4;
+        height: 500px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        border: 2px dashed #ccc;
+        margin-top: 20px;
+    }
+
+    .gallery-dropdown {
+        display: none;
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 8px;
+    }
+
+    .gallery-dropdown img {
+        width: 100px;
+        margin: 5px;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: transform 0.2s;
+    }
+
+    .gallery-dropdown img:hover {
+        transform: scale(1.1);
+    }
+
+    .button-container {
+        margin-top: 20px;
+        padding-right: 15px;
+    }
+
+    .btn-outline-success, .btn-outline-primary, .btn-outline-secondary {
+        margin-bottom: 10px;
+    }
+</style>
+@endsection
+
+
 
 @section('script')
 
@@ -180,25 +142,28 @@ document.getElementById('xray-upload-form').addEventListener('submit', function(
             img.style.width = '100%';
             img.style.height = '100%';
             img.alt = "X-ray preview";
- 
 
             const preview = document.getElementById('xray-preview');
-            preview.innerHTML = ''; // Clear previous
+            preview.innerHTML = ''; // Clear previous content
             preview.appendChild(img);
 
             alert('Upload successful');
-
-            localStorage.setItem('lastXrayPreview', src);
+            
+            // Ensure you are using the correct variable (data.png_path)
+            localStorage.setItem('lastXrayPreview', data.png_path);
 
         } else {
+            // If preview is not available, but upload succeeded
             alert('Upload successful, but preview not available.');
         }
     })
     .catch(err => {
+        // If there was an error with the upload, log the error and show a fail message
         console.error(err);
         alert('Upload failed.');
     });
 });
+
 
 //GET IMAGES
 document.addEventListener('DOMContentLoaded', () => {

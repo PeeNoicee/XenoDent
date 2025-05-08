@@ -42,3 +42,6 @@ Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/how-to-use', [PageController::class, 'howToUse'])->name('how-to-use');
 
 Route::patch('/updateUser', [AuthControl::class, 'updateUser'])->name('updateUser');
+
+//Uploading Xray image
+Route::post('/upload', [App\Http\Controllers\XrayControl::class, 'upload'])->name('upload');

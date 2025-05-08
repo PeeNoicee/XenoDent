@@ -24,7 +24,7 @@
                     <ul class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5 z-20 hidden group-hover:block" aria-labelledby="navbarDropdown">
                         <li><a class="dropdown-item" href="#" style="color: rgb(156, 163, 175);">Analytics</a></li>
                         <li><hr class="dropdown-divider bg-secondary"></li>
-                        <li><a class="dropdown-item" href="#" style="color: rgb(156, 163, 175);">X-ray AI</a></li>
+                        <li><a class="dropdown-item" href="{{ url('xrayPage') }}" style="color: rgb(156, 163, 175);">X-ray AI</a></li>
                         <li><hr class="dropdown-divider bg-secondary"></li>
                         @if($prem === 0)
                             <li><a class="dropdown-item disabled text-muted" href="#">For Premium user</a></li>
@@ -66,7 +66,7 @@
                 <ul class="dropdown-menu mt-2 w-full rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5 z-20" aria-labelledby="navbarDropdown">
                     <li><a class="dropdown-item text-gray-800 dark:text-gray-200" href="#">Analytics</a></li>
                     <li><hr class="dropdown-divider bg-secondary"></li>
-                    <li><a class="dropdown-item text-gray-800 dark:text-gray-200" href="#">X-ray AI</a></li>
+                    <li><a class="dropdown-item text-gray-800 dark:text-gray-200" href="{{ url('xrayPage') }}">X-ray AI</a></li>
                     <li><hr class="dropdown-divider bg-secondary"></li>
                     @if($prem === 0)
                         <li><a class="dropdown-item disabled text-muted" href="#">For Premium user</a></li>
