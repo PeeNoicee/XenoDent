@@ -15,6 +15,9 @@
                 <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-gray-800 dark:text-gray-200" style="color: rgb(156, 163, 175);">
                     {{ __('Back to Dashboard') }}
                 </x-nav-link>
+                <x-nav-link :href="route('homepage')" :active="request()->routeIs('homepage')" class="text-gray-800 dark:text-gray-200" style="color: rgb(156, 163, 175);">
+                    {{ __('Homepage') }}
+                </x-nav-link>
                 <x-nav-link :href="route('patientManagement')" :active="request()->routeIs('patientManagement')" class="text-gray-800 dark:text-gray-200" style="color: rgb(156, 163, 175);">
                     {{ __('Patient Management') }}
                 </x-nav-link>
