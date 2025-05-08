@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthControl;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\XrayControl;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PatientController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -47,3 +48,13 @@ Route::patch('/updateUser', [AuthControl::class, 'updateUser'])->name('updateUse
 Route::post('/upload', [App\Http\Controllers\XrayControl::class, 'upload'])->name('upload');
 
 Route::post('/analyze', [XrayControl::class, 'analyze'])->name('analyze');
+
+
+
+// For patients
+Route::get('/patientManagement', [PatientController::class, 'displayPatientManagement'])->name('patientManagement');
+Route::get('/patientManagement/create', [PatientController::class, 'create'])->name('addPatient');
+Route::post('/patientManagement', [PatientController::class, 'store'])->name('storePatient');
+Route::get('/patientManagement/{id}/edit', [PatientController::class, 'edit'])->name('editPatient');
+Route::put('/patients/{id}', [PatientController::class, 'update'])->name('updatePatient');
+Route::delete('/patientManagement/{id}', [PatientController::class, 'destroy'])->name('deletePatient');
