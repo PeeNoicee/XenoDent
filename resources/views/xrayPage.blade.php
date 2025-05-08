@@ -31,16 +31,16 @@
                 <h5 class="modal-title" id="exampleModalLabel">Image Upload</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <form id="xray-upload-form" enctype="multipart/form-data">
+            <form id="xray-upload-form" enctype="multipart/form-data">
+                <div class="modal-body">
                     @csrf
                     <input type="file" name="image" id="image-input" class="form-control mt-2">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-primary">Save changes</button>
-                </form>
-            </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -105,17 +105,12 @@
 //UPLOAD IMAGES
 document.getElementById('image-input').addEventListener('change', function(e) {
     const file = e.target.files[0];
-
     if (file) {
-        const reader = new FileReader();
-
-        reader.onload = function(event) {
-            const imgElement = document.getElementById('image-preview');
-            imgElement.src = event.target.result; 
-            imgElement.style.display = 'block'; 
+        // Just validate the file type if needed
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file');
+            this.value = ''; // Clear the file input
         }
-
-        reader.readAsDataURL(file); // Read the image file as a data URL
     }
 });
 
@@ -126,42 +121,134 @@ document.getElementById('xray-upload-form').addEventListener('submit', function(
 
     const form = e.target;
     const formData = new FormData(form);
+    const fileInput = form.querySelector('#image-input');
+    
+    if (!fileInput.files.length) {
+        alert('Please select a file to upload');
+        return;
+    }
 
-    fetch("{{ route('upload') }}", {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.png_path) {
-            const img = document.createElement('img');
-            img.src = data.png_path;
-            img.style.width = '100%';
-            img.style.height = '100%';
-            img.alt = "X-ray preview";
+    const file = fileInput.files[0];
+    
+    if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+    }
 
-            const preview = document.getElementById('xray-preview');
-            preview.innerHTML = ''; // Clear previous content
-            preview.appendChild(img);
+    const submitButton = form.querySelector('.btn-primary');
+    if (!submitButton) {
+        console.error('Submit button not found');
+        return;
+    }
 
-            alert('Upload successful');
-            
-            // Ensure you are using the correct variable (data.png_path)
-            localStorage.setItem('lastXrayPreview', data.png_path);
+    const originalButtonText = submitButton.textContent;
+    submitButton.textContent = 'Processing...';
+    submitButton.disabled = true;
 
-        } else {
-            // If preview is not available, but upload succeeded
-            alert('Upload successful, but preview not available.');
-        }
-    })
-    .catch(err => {
-        // If there was an error with the upload, log the error and show a fail message
-        console.error(err);
-        alert('Upload failed.');
-    });
+    const resizeImage = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    const MAX_WIDTH = 1920;
+                    const MAX_HEIGHT = 1080;
+                    
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    canvas.toBlob((blob) => {
+                        const resizedFile = new File([blob], file.name, {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        });
+                        resolve(resizedFile);
+                    }, 'image/jpeg', 0.8);
+                };
+                img.onerror = reject;
+            };
+            reader.onerror = reject;
+        });
+    };
+
+    resizeImage(file)
+        .then(resizedFile => {
+            const newFormData = new FormData();
+            newFormData.append('image', resizedFile);
+            newFormData.append('_token', '{{ csrf_token() }}');
+
+            return fetch("{{ route('upload') }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: newFormData
+            });
+        })
+        .then(async res => {
+            if (res.status === 413) {
+                throw new Error('File size too large even after resizing. Please try a smaller image.');
+            }
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.error || `HTTP error! status: ${res.status}`);
+            }
+            return data;
+        })
+        .then(data => {
+            if (data.png_path) {
+                const preview = document.getElementById('xray-preview');
+                if (!preview) {
+                    console.error('Preview element not found');
+                    return;
+                }
+
+                preview.innerHTML = '';
+                
+                const img = document.createElement('img');
+                img.src = data.png_path;
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '100%';
+                img.style.objectFit = 'contain';
+                img.alt = "X-ray preview";
+                
+                preview.appendChild(img);
+            }
+        })
+        .catch(error => {
+            alert(error.message || 'An error occurred during upload');
+        })
+        .finally(() => {
+            if (submitButton) {
+                submitButton.textContent = originalButtonText;
+                submitButton.disabled = false;
+            }
+            const modal = bootstrap.Modal.getInstance(document.getElementById('exampleModal'));
+            if (modal) {
+                modal.hide();
+            }
+        });
 });
 
 
@@ -169,87 +256,109 @@ document.getElementById('xray-upload-form').addEventListener('submit', function(
 document.addEventListener('DOMContentLoaded', () => {
     const toggleButton = document.getElementById('toggle-gallery');
     const gallery = document.getElementById('gallery-dropdown');
-    const savedState = localStorage.getItem('galleryState');
-
-    if (savedState === 'open') {
-        gallery.style.display = 'block';
-    } else {
-        gallery.style.display = 'none';
-    }
+    
+    gallery.style.display = 'none';
 
     toggleButton.addEventListener('click', function () {
         if (gallery.style.display === 'none' || gallery.style.display === '') {
-            // Fetch and show the gallery
-            fetch("{{ route('getImages') }}")
-                .then(res => res.json())
-                .then(data => {
-                    gallery.innerHTML = ''; // Clear previous content
-
-                    if (data.images.length === 0) {
-                        const message = document.createElement('p');
-                        message.textContent = 'No X-ray images found.';
-                        message.style.color = '#888';
-                        gallery.appendChild(message);
-                    } else {
-                        data.images.forEach(src => {
-                            const img = document.createElement('img');
-                            img.src = src;
-                            img.alt = 'X-ray';
-                            img.style.width = '100px';
-                            img.style.margin = '5px';
-                            img.style.cursor = 'pointer';
-
-                            img.addEventListener('click', () => {
-
-                                localStorage.setItem('lastXrayPreview', src);
-
-                                const preview = document.getElementById('xray-preview');
-                                preview.innerHTML = ''; 
-
-                                const fullImg = document.createElement('img');
-                                fullImg.src = src;
-
-                                fullImg.alt = 'X-ray Last Viewed';
-                                fullImg.style.maxWidth = '100%';
-                                fullImg.style.maxHeight = '100%';
-                                fullImg.style.objectFit = 'contain';
-                                fullImg.style.borderRadius = '4px';
-
-                                preview.appendChild(fullImg);
-                            });
-
-                            gallery.appendChild(img);
-                        });
-                    }
-
-                    gallery.style.display = 'block';
-                    localStorage.setItem('galleryState', 'open'); // Save state
-                })
-                .catch(err => {
-                    console.error('Failed to load gallery:', err);
-                    alert('Could not load images.');
-                });
+            gallery.style.display = 'block';
         } else {
-            
             gallery.style.display = 'none';
-            localStorage.setItem('galleryState', 'closed'); // Save state
         }
     });
 });
 
 
+// Add analyze button click handler
 document.addEventListener('DOMContentLoaded', () => {
-    const savedPath = localStorage.getItem('lastXrayPreview');
-    if (savedPath) {
-        const preview = document.getElementById('xray-preview');
-        const fullImg = document.createElement('img');
-        fullImg.src = savedPath;
-        fullImg.alt = 'X-ray Last Viewed';
-        fullImg.style.maxWidth = '100%';
-        fullImg.style.maxHeight = '100%';
-        fullImg.style.objectFit = 'contain';
-        fullImg.style.borderRadius = '4px';
-        preview.appendChild(fullImg);
+    const analyzeButton = document.querySelector('.btn-outline-primary');
+    if (analyzeButton) {
+        analyzeButton.addEventListener('click', function() {
+            const preview = document.getElementById('xray-preview');
+            const img = preview.querySelector('img');
+            
+            if (!img || !img.src) {
+                alert('Please upload an X-ray image first');
+                return;
+            }
+
+            const originalText = this.textContent;
+            this.textContent = 'Analyzing...';
+            this.disabled = true;
+
+            const imagePath = img.src.split('/').pop();
+
+            fetch("{{ route('analyze') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    image_path: imagePath
+                })
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    if (data.flask_analysis && data.flask_analysis.image) {
+                        const analyzedImg = document.createElement('img');
+                        analyzedImg.src = 'data:image/png;base64,' + data.flask_analysis.image;
+                        analyzedImg.style.maxWidth = '100%';
+                        analyzedImg.style.maxHeight = '100%';
+                        analyzedImg.style.objectFit = 'contain';
+                        analyzedImg.alt = "Analyzed X-ray";
+                        
+                        analyzedImg.onload = function() {
+                            preview.innerHTML = '';
+                            preview.appendChild(analyzedImg);
+
+                            // Add the analyzed image to the gallery
+                            const gallery = document.getElementById('gallery-dropdown');
+                            const galleryImg = document.createElement('img');
+                            galleryImg.src = analyzedImg.src;
+                            galleryImg.alt = 'Analyzed X-ray';
+                            galleryImg.style.width = '100px';
+                            galleryImg.style.margin = '5px';
+                            galleryImg.style.cursor = 'pointer';
+
+                            galleryImg.addEventListener('click', () => {
+                                preview.innerHTML = '';
+                                const fullImg = document.createElement('img');
+                                fullImg.src = galleryImg.src;
+                                fullImg.alt = 'Analyzed X-ray';
+                                fullImg.style.maxWidth = '100%';
+                                fullImg.style.maxHeight = '100%';
+                                fullImg.style.objectFit = 'contain';
+                                preview.appendChild(fullImg);
+                            });
+
+                            gallery.appendChild(galleryImg);
+                        };
+                        
+                        analyzedImg.onerror = function() {
+                            alert('Failed to load analyzed image. Please try again.');
+                        };
+                    } else if (data.api_error) {
+                        alert('Could not connect to analysis server. Please make sure the Flask server is running.');
+                    }
+                } else {
+                    throw new Error(data.error || 'Analysis failed');
+                }
+            })
+            .catch(error => {
+                alert('Analysis failed: ' + error.message);
+            })
+            .finally(() => {
+                this.textContent = originalText;
+                this.disabled = false;
+            });
+        });
     }
 });
 
