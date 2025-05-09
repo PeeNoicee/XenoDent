@@ -11,7 +11,7 @@
                 </div>
 
                 <!-- Navigation Links (Hidden on smaller screens) -->
-                <div class="hidden space-x-8 sm:flex ml-10">
+            <div class="hidden space-x-8 sm:flex ml-10">
                 <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-gray-800 dark:text-gray-200" style="color: rgb(156, 163, 175);">
                     {{ __('Back to Dashboard') }}
                 </x-nav-link>
@@ -53,6 +53,22 @@
                     </svg>
                 </button>
             </div>
+
+            @if($prem === 0)
+                <div class="d-flex">
+                    <a href = "{{url ('premiumPage') }}">
+                    <button class="btn btn-outline-success">Go PREMIUM</button>
+                    </a>
+                </div>
+            @else
+
+                <div class="d-flex">
+                    <a >
+                    <button class="btn btn-outline-success">Need Support?</button>
+                    </a>
+                </div>
+
+            @endif  
         </div>
     </div>
 
@@ -81,7 +97,28 @@
                     @endif
                 </ul>
             </div>
+
+            @if($prem === 0)
+                <div class="d-flex">
+                    <a href = "{{url ('premiumPage') }}">
+                    <button class="btn btn-outline-success">Go PREMIUM</button>
+                    </a>
+                </div>
+            @else
+
+                <div class="d-flex">
+                    <a >
+                    <button class="btn btn-outline-success">Need Support?</button>
+                    </a>
+                </div>
+
+            @endif
+
         </div>
+
+
+
+
 
         <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
