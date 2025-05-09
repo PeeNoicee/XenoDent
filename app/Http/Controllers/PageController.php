@@ -10,28 +10,33 @@ class PageController extends Controller
 {
 
     public function home() {
-
         // Fetch the user's name
         $userName = Auth::user()->name;
     
-        // Check if the user is premium
-        $prem = $this->ifPrem();
+        // Check if the user is authenticated as a premium user
+        $prem = authUser::select()->where('user_id', Auth::user()->id)
+            ->where('authenticated', 1)->first();
     
-        if (!is_null($prem) && $prem !== 0) {
-            // If premium, include the user's name and indicate they are premium
-            $welcome = "Welcome Dr. " . $userName . " (PREMIUM)";
+        if (is_null($prem)) {
+            // If the user is not premium
+            $welcome = "WELCOME " . $userName . "!";
+            $prem = 0;
         } else {
-            // If not premium, greet the user with their name as a customer
-            $welcome = "Welcome Dr. " . $userName . " (CUSTOMER)";
+            // If the user is premium
+            $welcome = "WELCOME " . $userName . " (PREMIUM USER)!";
+            $prem = 1;  // Set it to 1 instead of the model object
         }
     
+        // Pass the $prem variable to the view
         return view('Homepage', Compact('welcome', 'prem'));
     }
+    
     
 
     public function premium(){
         return view('premiumPage');
     }
+    
 
 
     public function xray(){

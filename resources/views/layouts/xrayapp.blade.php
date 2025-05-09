@@ -4,12 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
+    <title>XenoDent</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link rel="stylesheet" href="{{ asset('css/xraycss.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.js" defer></script>
+
 
     <!-- Custom Theme Overrides -->
     <style>
@@ -28,25 +30,16 @@
             color: #F9FAFB;
         }
 
-        .progress {
-            background-color: #374151;
-            height: 1.25rem;
-            border-radius: 0.375rem;
-            overflow: hidden;
-        }
 
-        /* Force navbar and navbar-collapse to be visible */
-        .navbar, .navbar-collapse {
-            display: block !important;
-            visibility: visible !important;
-        }
+
     </style>
-
-    <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
 <body>
+    @if(!request()->routeIs('xrayLanding'))
+        @include('layouts.xraynavigation', ['prem' => $prem ?? 0])
+    @endif
 
     <div class="container">
         @yield('content')
