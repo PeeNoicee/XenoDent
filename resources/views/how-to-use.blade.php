@@ -24,32 +24,33 @@
                 <div style="margin-top: 2rem; display: flex; flex-direction: column; gap: 2rem; align-items: center;">
                     <!-- Step 1 -->
                     <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
-                        <img src="{{ asset('images/img-placeholder.png') }}" alt="Login Step" style="width: 300px; border-radius: 0.5rem; margin-bottom: 0.5rem;">
+                        <img src="{{ asset('images/login.png') }}" alt="Login Step" style="width: 500px; border-radius: 0.5rem; margin-bottom: 0.5rem;">
                         <p>Log in to your XenoDent account</p>
                     </div>
 
                     <!-- Step 2 -->
                     <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
-                        <img src="{{ asset('images/img-placeholder.png') }}" alt="Dashboard Step" style="width: 300px; border-radius: 0.5rem; margin-bottom: 0.5rem;">
-                        <p>Click the “Analyze Dental X-Ray” button on your dashboard</p>
+                        <img src="{{ asset('images/upload.png') }}" alt="Upload X-Ray Step" style="width: 500px; border-radius: 0.5rem; margin-bottom: 0.5rem;">
+                        <p>Click the upload button, choose the patient and click the save changes</p>
                     </div>
 
                     <!-- Step 3 -->
                     <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
-                        <img src="{{ asset('images/img-placeholder.png') }}" alt="Upload X-Ray Step" style="width: 300px; border-radius: 0.5rem; margin-bottom: 0.5rem;">
-                        <p>Upload a valid dental X-ray image (JPG, PNG, etc.)</p>
+                        <img src="{{ asset('images/analyze.png') }}" alt="Dashboard Step" style="width: 500px; border-radius: 0.5rem; margin-bottom: 0.5rem;">
+                        <p>Click the “Analyze” button</p>
                     </div>
+
 
                     <!-- Step 4 -->
                     <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
-                        <img src="{{ asset('images/img-placeholder.png') }}" alt="Processing Step" style="width: 300px; border-radius: 0.5rem; margin-bottom: 0.5rem;">
+                        <img src="{{ asset('images/wait.png') }}" alt="Processing Step" style="width: 500px; border-radius: 0.5rem; margin-bottom: 0.5rem;">
                         <p>Wait for the AI to process and display results</p>
                     </div>
 
                     <!-- Step 5 -->
                     <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
-                        <img src="{{ asset('images/img-placeholder.png') }}" alt="Download Report Step" style="width: 300px; border-radius: 0.5rem; margin-bottom: 0.5rem;">
-                        <p>Download the diagnostic report if needed</p>
+                        <img src="{{ asset('images/done.png') }}" alt="Download Report Step" style="width: 500px; border-radius: 0.5rem; margin-bottom: 0.5rem;">
+                        <p>And you're done</p>
                     </div>
                 </div>
             </div>

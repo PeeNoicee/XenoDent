@@ -28,10 +28,12 @@
             </div>
 
             <div class="col">
-                <div style="background-color: #374151; height: 500px; width: 500px; margin: 15% 0px 0px 10%; border-radius: 0.5rem;">
-                    <h1 class="text-center pt-5 text-light">IMG HERE</h1>
+                <div class="d-flex justify-content-center align-items-center" style="height: 600px; width: 600px; margin: 10% 0 0 10%; border-radius: 0.5rem; overflow: hidden;">
+                    <img src="{{ asset('images/dental.png') }}" alt="X-ray Image" style="width: 120%; height: auto; object-fit: cover; border-radius: 0.5rem; transform: scaleX(-1);">
                 </div>
+
             </div>
+
         </div>
     </div>
 

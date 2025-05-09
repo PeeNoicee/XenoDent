@@ -50,7 +50,7 @@
                     <li>BETTER AI MODEL</li>
                     <li>DIRECT SUPPORT</li>
                     <li>FEATURE REQUESTS</li>
-                    <li>UNLIMITED XRAY ANALYSIS
+                    <li>UNLIMITED XRAY ANALYSIS</li>
                 </ol>
 
                 <!-- Purchase Form -->
