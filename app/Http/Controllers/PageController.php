@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\authUser;
+use App\Models\Patient;
 use Illuminate\Support\Facades\Auth;
 
 class PageController extends Controller
@@ -42,8 +43,11 @@ class PageController extends Controller
     public function xray(){
 
         $prem = $this->ifPrem();
+        $dentistName = Auth::user()->name;
+        $listOfUsers = Patient::select()->get();
 
-        return view('xrayPage', Compact('prem'));
+
+        return view('xrayPage', Compact('prem', 'listOfUsers','dentistName'));
     }
 
 

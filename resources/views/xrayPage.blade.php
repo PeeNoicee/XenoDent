@@ -5,6 +5,7 @@
 <div class="container my-4">
     <div class="row">
         <!-- Left Side (Buttons) -->
+
         <div class="col-md-4">
             <div class="button-container">
                 <button type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" class="btn btn-outline-success mb-3 w-100">UPLOAD</button>
@@ -32,8 +33,37 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="xray-upload-form" enctype="multipart/form-data">
-                <div class="modal-body">
-                    @csrf
+
+                    <div class="modal-body">
+                        @csrf
+
+                        <div class="dropdown" style = "margin-bottom: 20px;">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                            Patients
+                        </button>
+
+                        @if(!$listOfUsers->isEmpty())
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                @foreach($listOfUsers as $patient)
+                                    <li>
+                                        <a class="dropdown-item patient-select" 
+                                        href="#" 
+                                        data-id="{{ $patient->id }}" 
+                                        data-name="{{ $patient->name }}">
+                                            {{ $patient->name }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <div>No Patients registered</div>
+                        @endif
+
+                    </div>
+
+                        <input type="text" id="patientName" name="patient_name" class="form-control mb-2" placeholder="Selected Patient Name" readonly>
+                        <input type="hidden" id="patientId" name="patient_id">
+                        <input type="hidden" id="editedBy" name="dentistName" value = "{{$dentistName}}">
                     <input type="file" name="image" id="image-input" class="form-control mt-2">
                 </div>
                 <div class="modal-footer">
@@ -113,6 +143,20 @@ document.getElementById('image-input').addEventListener('change', function(e) {
         }
     }
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+        const patientLinks = document.querySelectorAll('.patient-select');
+        patientLinks.forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                const patientId = this.getAttribute('data-id');
+                const patientName = this.getAttribute('data-name');
+
+                document.getElementById('patientName').value = patientName;
+                document.getElementById('patientId').value = patientId;
+            });
+        });
+    });
 
 
 //PREVIEW IMAGE
@@ -197,6 +241,14 @@ document.getElementById('xray-upload-form').addEventListener('submit', function(
             const newFormData = new FormData();
             newFormData.append('image', resizedFile);
             newFormData.append('_token', '{{ csrf_token() }}');
+
+            const dentistName = document.getElementById('editedBy').value;
+            const patientName = document.getElementById('patientName').value;
+            //const patientId = document.getElementById('patientId').value;
+       
+            newFormData.append('dentist_name',dentistName);
+            newFormData.append('patient_name', patientName);
+            //newFormData.append('patient_id', patientId);
 
             return fetch("{{ route('upload') }}", {
                 method: 'POST',
