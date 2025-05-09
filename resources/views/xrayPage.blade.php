@@ -8,7 +8,12 @@
 
         <div class="col-md-4">
             <div class="button-container">
+                @if($prem === 0)
+                <button type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" class="btn btn-outline-success mb-3 w-100">
+                    UPLOAD (Limit <span id="xray-count-text">{{ $xrayCount }}</span>/5)</button>
+                @else
                 <button type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" class="btn btn-outline-success mb-3 w-100">UPLOAD</button>
+                @endif
                 <button class="btn btn-outline-primary w-100 mb-3">ANALYZE</button>
                 <button id="toggle-gallery" class="btn btn-outline-secondary w-100">Show X-ray Gallery</button>
             </div>
@@ -244,11 +249,11 @@ document.getElementById('xray-upload-form').addEventListener('submit', function(
 
             const dentistName = document.getElementById('editedBy').value;
             const patientName = document.getElementById('patientName').value;
-            //const patientId = document.getElementById('patientId').value;
+            const patientId = document.getElementById('patientId').value;
        
             newFormData.append('dentist_name',dentistName);
             newFormData.append('patient_name', patientName);
-            //newFormData.append('patient_id', patientId);
+            newFormData.append('patient_id', patientId);
 
             return fetch("{{ route('upload') }}", {
                 method: 'POST',
@@ -286,7 +291,11 @@ document.getElementById('xray-upload-form').addEventListener('submit', function(
                 img.alt = "X-ray preview";
                 
                 preview.appendChild(img);
+
+                
             }
+
+            updateXrayCount();
         })
         .catch(error => {
             alert(error.message || 'An error occurred during upload');
@@ -300,9 +309,24 @@ document.getElementById('xray-upload-form').addEventListener('submit', function(
             if (modal) {
                 modal.hide();
             }
+
+            
         });
 });
 
+
+//Update count
+function updateXrayCount() {
+    fetch("/xray-count")
+        .then(response => response.json())
+        .then(data => {
+            const span = document.getElementById('xray-count-text');
+            if (span) {
+                span.textContent = data.xrayCount;
+            }
+        })
+        .catch(error => console.error('Error fetching xray count:', error));
+}
 
 //GET IMAGES
 document.addEventListener('DOMContentLoaded', () => {

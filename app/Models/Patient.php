@@ -19,4 +19,9 @@ class Patient extends Model
         'allergies',
         'notes'
     ];
+
+    public function xrays()
+    {
+        return $this->hasMany(xrays::class, 'patient_id');
+    }
 }

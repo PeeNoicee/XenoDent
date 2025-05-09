@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\authUser;
 use App\Models\Patient;
 use Illuminate\Support\Facades\Auth;
+use App\Models\xrays;
+use Carbon\Carbon;
 
 class PageController extends Controller
 {
@@ -46,8 +48,14 @@ class PageController extends Controller
         $dentistName = Auth::user()->name;
         $listOfUsers = Patient::select()->get();
 
+        $dateNow = Carbon::today('America/New_York');
 
-        return view('xrayPage', Compact('prem', 'listOfUsers','dentistName'));
+        $xrayCount = xrays::select()->where('edited_by', Auth::user()->name)
+        ->whereDate('created_at', $dateNow)
+        ->count();
+
+
+        return view('xrayPage', Compact('prem', 'listOfUsers','dentistName', 'xrayCount'));
     }
 
 

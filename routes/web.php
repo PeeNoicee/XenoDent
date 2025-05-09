@@ -39,13 +39,15 @@ Route::match(['get','patch','post'],'/xrayPage', [PageController::class, 'xray']
 Route::match(['get','patch','post'],'/uploadImage', [XrayControl::class, 'upload'])->name('upload');
 Route::match(['get','patch','post'],'/getImages', [XrayControl::class, 'getImages'])->name('getImages');
 
+Route::get('/xray-count', [XrayControl::class, 'getXrayCount'])->name('xray.count');
+
 Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/how-to-use', [PageController::class, 'howToUse'])->name('how-to-use');
 
 Route::patch('/updateUser', [AuthControl::class, 'updateUser'])->name('updateUser');
 
 //Uploading Xray image
-Route::post('/upload', [App\Http\Controllers\XrayControl::class, 'upload'])->name('upload');
+Route::post('/upload', [XrayControl::class, 'upload'])->name('upload');
 
 Route::post('/analyze', [XrayControl::class, 'analyze'])->name('analyze');
 
