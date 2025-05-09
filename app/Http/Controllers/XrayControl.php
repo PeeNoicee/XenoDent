@@ -33,6 +33,8 @@ class XrayControl extends Controller
             }
         
             $file = $request->file('image');
+            $dentistName = $request->input('dentist_name');
+            $patientName = $request->input('patient_name');
             
             // Validate file type
             if (!$file->isValid()) {
@@ -66,6 +68,8 @@ class XrayControl extends Controller
 
             $xray = xrays::firstOrCreate([
                 'path' => $path,
+                'patient_name' => $patientName,
+                'edited_by' => $dentistName,
             ]);
 
             // Generate the correct URL for the stored file
