@@ -21,7 +21,7 @@ class XrayControl extends Controller
 
     public function getXrayCount()
     {
-        $dateNow = Carbon::today('America/New_York');
+        $dateNow = Carbon::today()->setTimezone('UTC');
         $xrayCount = xrays::select()->where('edited_by', Auth::user()->name)
         ->whereDate('created_at', $dateNow)
         ->count();
@@ -38,7 +38,7 @@ class XrayControl extends Controller
 
         $uploadCount = 5;
 
-        $dateNow = Carbon::today('America/New_York');
+        $dateNow = Carbon::today()->setTimezone('UTC');
         $patientID = $request->input('patient_id');
         
         $xrayCount = xrays::select()->where('edited_by', Auth::user()->name)
