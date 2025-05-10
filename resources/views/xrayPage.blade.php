@@ -8,13 +8,20 @@
 
         <div class="col-md-4">
             <div class="button-container">
+
+            @if($prem === 0)
+                <div>Analyze Limit 5, <br>
+                Current count:  <span id="xray-count-text"></span> </div>
+            @else
+            @endif
+                <button type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" class="btn btn-outline-success mb-3 w-100"> UPLOAD </button>
                 @if($prem === 0)
-                <button type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" class="btn btn-outline-success mb-3 w-100">
-                    UPLOAD (Limit <span id="xray-count-text">{{ $xrayCount }}</span>/5)</button>
+                <button class="btn btn-outline-primary w-100 mb-3">
+                   ANALYZE
+                </button>
                 @else
-                <button type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" class="btn btn-outline-success mb-3 w-100">UPLOAD</button>
+                 <button class="btn btn-outline-primary w-100 mb-3">ANALYZE</button>
                 @endif
-                <button class="btn btn-outline-primary w-100 mb-3">ANALYZE</button>
                 <button id="toggle-gallery" class="btn btn-outline-secondary w-100">Show X-ray Gallery</button>
             </div>
         </div>
@@ -24,7 +31,10 @@
             <div id="xray-preview" class="xray-preview">
                 <p>No Image Selected</p>
             </div>
-            <div id="analysis-results"></div>
+            @if($prem === 0)
+            @else
+                <div id="analysis-results"></div>
+            @endif
             <input type="hidden" id="uploaded-image-id" name="img_id">
             <div id="gallery-dropdown" class="gallery-dropdown"></div>
         </div>
@@ -69,7 +79,7 @@
                     </div>
 
                         <input type="text" id="patientName" name="patient_name" class="form-control mb-2" placeholder="Selected Patient Name" readonly>
-                        <input type="hidden" id="patientId" name="patient_id">
+                        <input type="hidden" id="patientId" name="patient_id" required>
                         <input type="hidden" id="editedBy" name="dentistName" value = "{{$dentistName}}">
                     <input type="file" name="image" id="image-input" class="form-control mt-2">
                 </div>
@@ -304,7 +314,7 @@ document.getElementById('xray-upload-form').addEventListener('submit', function(
                 console.log("Uploaded Image ID:", data.image_id); // For debugging
                 }
 
-            updateXrayCount();
+            
         })
         .catch(error => {
             alert(error.message || 'An error occurred during upload');
@@ -326,16 +336,27 @@ document.getElementById('xray-upload-form').addEventListener('submit', function(
 
 //Update count
 function updateXrayCount() {
-    fetch("/xray-count")
-        .then(response => response.json())
-        .then(data => {
-            const span = document.getElementById('xray-count-text');
-            if (span) {
-                span.textContent = data.xrayCount;
-            }
-        })
-        .catch(error => console.error('Error fetching xray count:', error));
+    fetch("{{ route('xray.count') }}", {
+        method: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Target the specific div
+        const countDiv = document.getElementById('xray-count-text');
+        if (countDiv) {
+            countDiv.textContent = data.count; // Update the div with the new count
+        }
+    })
+    .catch(error => console.error('Error fetching xray count:', error));
 }
+
+// Refresh the count every 5 seconds (or adjust the interval as needed)
+setInterval(updateXrayCount, 1000);
+
+
 
 //GET IMAGES
 document.addEventListener('DOMContentLoaded', () => {
@@ -581,6 +602,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.success) {
                     const { flask_analysis, output_file } = data;
 
+                    updateXrayCount();
+
                     // Display the analyzed image
                     if (flask_analysis && flask_analysis.image) {
                         const analyzedImg = document.createElement('img');
@@ -631,15 +654,17 @@ document.addEventListener('DOMContentLoaded', () => {
                             const predictionElement = document.createElement('div');
                             predictionElement.classList.add('prediction');
                             predictionElement.style.marginBottom = '10px';
-                            predictionElement.innerHTML = `
+                            predictionElement.innerHTML = `<br>
                                 <strong>Class:</strong> ${prediction.class} <br>
                                 <strong>Confidence:</strong> ${(prediction.confidence * 100).toFixed(2)}% <br>
                                 <strong>Position:</strong> (x: ${prediction.x.toFixed(2)}, y: ${prediction.y.toFixed(2)}) <br>
                                 <strong>Size:</strong> (width: ${prediction.width.toFixed(2)}, height: ${prediction.height.toFixed(2)}) <br>
-                                <strong>ID:</strong> ${prediction.detection_id}
                             `;
                             resultsContainer.appendChild(predictionElement);
                         });
+
+                        
+
                     }
 
                     // Provide a link to the saved output file for later access
@@ -652,6 +677,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         outputLink.style.marginTop = '10px';
                         preview.appendChild(outputLink);
                     }
+
 
                 } else if (data.api_error) {
                     alert('Could not connect to analysis server. Please make sure the Flask server is running.');
@@ -667,6 +693,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 
 
 

@@ -28,7 +28,7 @@
                                 Actions
                             </button>
                             <ul class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5 z-20 hidden group-hover:block" aria-labelledby="navbarDropdown">
-                                <li><a class="dropdown-item" href="#" style="color: rgb(156, 163, 175);">Analytics</a></li>
+                               
                                 <li><hr class="dropdown-divider bg-secondary"></li>
                                 <li><a class="dropdown-item" href="{{ url('xrayPage') }}" style="color: rgb(156, 163, 175);">X-ray AI</a></li>
                                 <li><hr class="dropdown-divider bg-secondary"></li>

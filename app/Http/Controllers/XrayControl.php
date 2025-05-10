@@ -19,44 +19,24 @@ class XrayControl extends Controller
         $this->xrayAnalysisService = $xrayAnalysisService;
     }
 
+
     public function getXrayCount()
     {
         $dateNow = Carbon::today()->setTimezone('UTC');
-        $xrayCount = xrays::select()->where('edited_by', Auth::user()->name)
-        ->whereDate('created_at', $dateNow)
-        ->count();
+        $xrayCount = xrays::where('edited_by', Auth::user()->name)
+            ->whereDate('created_at', $dateNow)
+            ->whereNotNull('output_image')
+            ->count();
 
-        return response()->json(['xrayCount' => $xrayCount]);
+        // Use 'count' for consistency with the JavaScript function
+        return response()->json(['count' => $xrayCount]);
     }
+
 
     //
     public function upload(Request $request){
 
-        $dentistAuth = authUser::select('authenticated')
-        ->where('name', Auth::user()->name)
-        ->first();
-
-        $uploadCount = 5;
-
-        $dateNow = Carbon::today()->setTimezone('UTC');
         $patientID = $request->input('patient_id');
-        
-        $xrayCount = xrays::select()->where('edited_by', Auth::user()->name)
-        ->whereDate('created_at', $dateNow)
-        ->count();
-
-        if($dentistAuth && (int) $dentistAuth->authenticated == 1){
-
-             $uploadCount = 9999;
-
-        }
-
-        
-        if($xrayCount >= $uploadCount){
-
-            return response()->json(['error' => 'You have reached the limit of uploads'], 400);
-
-        }else{
 
             try {
                 \Log::info('Upload request received', [
@@ -138,7 +118,7 @@ class XrayControl extends Controller
 
 
 
-        }
+        
 
     }
 
@@ -250,76 +230,108 @@ class XrayControl extends Controller
 
         public function analyze(Request $request)
         {
-            try {
-                // Validate the input
-                $request->validate([
-                    'image_id' => 'required|integer'
-                ]);
 
-                // Get the image ID
-                $imageId = $request->input('image_id');
+                $dentistAuth = authUser::select('authenticated')
+                ->where('name', Auth::user()->name)
+                ->first();
 
-                // Retrieve the X-ray record from the database
-                $xray = xrays::find($imageId);
+                $uploadCount = 5;
 
-                if (!$xray) {
-                    return response()->json([
-                        'success' => false,
-                        'error' => 'X-ray record not found'
-                    ], 404);
-                }
-
-                // Construct the full image path
-                $fullPath = storage_path('app/public/' . $xray->path);
-
-                if (!file_exists($fullPath)) {
-                    return response()->json([
-                        'success' => false,
-                        'error' => 'Image file not found'
-                    ], 404);
-                }
-
-                // Use the service to analyze the image
-                $result = $this->xrayAnalysisService->analyzeImage($fullPath);
-
-                // Generate a unique output file name
-                $outputFileName = pathinfo($xray->path, PATHINFO_FILENAME) . '_output_' . uniqid() . '.json';
-                $outputDirectory = public_path('xrayOutputs');
+                $dateNow = Carbon::today()->setTimezone('UTC');
                 
-                // Create the output directory if it doesn't exist
-                if (!file_exists($outputDirectory)) {
-                    mkdir($outputDirectory, 0755, true);
+                $xrayCount = xrays::select()->where('edited_by', Auth::user()->name)
+                ->whereDate('created_at', $dateNow)
+                ->whereNotNull('output_image')
+                ->count();
+
+                if($dentistAuth && (int) $dentistAuth->authenticated == 1){
+
+                    $uploadCount = 9999;
+
+                }
+                
+                if($xrayCount >= $uploadCount){
+
+                      return response()->json(['error' => 'You have reached the limit of uploads'], 400);
+
+                }
+     
+                else{
+
+                    try {
+                        // Validate the input
+                        $request->validate([
+                            'image_id' => 'required|integer'
+                        ]);
+
+                        // Get the image ID
+                        $imageId = $request->input('image_id');
+
+                        // Retrieve the X-ray record from the database
+                        $xray = xrays::find($imageId);
+
+                        if (!$xray) {
+                            return response()->json([
+                                'success' => false,
+                                'error' => 'X-ray record not found'
+                            ], 404);
+                        }
+
+                        // Construct the full image path
+                        $fullPath = storage_path('app/public/' . $xray->path);
+
+                        if (!file_exists($fullPath)) {
+                            return response()->json([
+                                'success' => false,
+                                'error' => 'Image file not found'
+                            ], 404);
+                        }
+
+                        // Use the service to analyze the image
+                        $result = $this->xrayAnalysisService->analyzeImage($fullPath);
+
+                        // Generate a unique output file name
+                        $outputFileName = pathinfo($xray->path, PATHINFO_FILENAME) . '_output_' . uniqid() . '.json';
+                        $outputDirectory = public_path('xrayOutputs');
+                        
+                        // Create the output directory if it doesn't exist
+                        if (!file_exists($outputDirectory)) {
+                            mkdir($outputDirectory, 0755, true);
+                        }
+
+                        // Save the full analysis result including the Base64 image
+                        $outputFilePath = $outputDirectory . '/' . $outputFileName;
+                        file_put_contents($outputFilePath, json_encode($result, JSON_PRETTY_PRINT));
+
+                        // Save the output path to the database
+                        $xray->output_image = 'xrayOutputs/' . $outputFileName;
+                        $xray->save();
+
+                        // Return the full analysis result, including the Base64 image
+                        return response()->json([
+                            'success' => true,
+                            'message' => 'Analysis successful',
+                            'output_file' => asset('xrayOutputs/' . $outputFileName),
+                            'result' => $result,
+                            'flask_analysis' => $result['flask_analysis'] // Includes the Base64 image
+                        ]);
+
+                    } catch (\Exception $e) {
+                        \Log::error('Analysis failed', [
+                            'error' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString()
+                        ]);
+
+                        return response()->json([
+                            'success' => false,
+                            'error' => 'Analysis failed: ' . $e->getMessage()
+                        ], 500);
+                    }
+
                 }
 
-                // Save the full analysis result including the Base64 image
-                $outputFilePath = $outputDirectory . '/' . $outputFileName;
-                file_put_contents($outputFilePath, json_encode($result, JSON_PRETTY_PRINT));
-
-                // Save the output path to the database
-                $xray->output_image = 'xrayOutputs/' . $outputFileName;
-                $xray->save();
-
-                // Return the full analysis result, including the Base64 image
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Analysis successful',
-                    'output_file' => asset('xrayOutputs/' . $outputFileName),
-                    'result' => $result,
-                    'flask_analysis' => $result['flask_analysis'] // Includes the Base64 image
-                ]);
-
-            } catch (\Exception $e) {
-                \Log::error('Analysis failed', [
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
-                ]);
-
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Analysis failed: ' . $e->getMessage()
-                ], 500);
-            }
         }
+
 
 
 
