@@ -123,7 +123,8 @@ class XrayControl extends Controller
                     'message' => 'X-ray uploaded with metadata',
                     'png_path' => $url,
                     'storage_path' => $path,
-                    'original_name' => $originalName
+                    'original_name' => $originalName,
+                    'image_id' => $xray->id
                 ]);
             } catch (\Exception $e) {
                 \Log::error('Upload failed', [
@@ -169,15 +170,31 @@ class XrayControl extends Controller
     }
 
 
+    /*
     public function analyze(Request $request)
     {
-        try {
+
+            try {
+            // Validate the input
             $request->validate([
-                'image_path' => 'required|string'
+                'image_id' => 'required|integer'
             ]);
 
-            $imagePath = $request->input('image_path');
-            $fullPath = storage_path('app/public/xray_images/' . $imagePath);
+            // Get the image ID
+            $imageId = $request->input('image_id');
+
+            // Retrieve the X-ray record from the database
+            $xray = xrays::find($imageId);
+
+            if (!$xray) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'X-ray record not found'
+                ], 404);
+            }
+
+            // Construct the full image path
+            $fullPath = storage_path('app/public/' . $xray->path);
 
             if (!file_exists($fullPath)) {
                 return response()->json([
@@ -188,8 +205,30 @@ class XrayControl extends Controller
 
             // Use the service to analyze the image
             $result = $this->xrayAnalysisService->analyzeImage($fullPath);
+
+            // Generate a unique output file name
+            $outputFileName = pathinfo($xray->path, PATHINFO_FILENAME) . '_output_' . uniqid() . '.json';
+            $outputDirectory = public_path('xrayOutputs');
             
-            return response()->json($result);
+            // Create the output directory if it doesn't exist
+            if (!file_exists($outputDirectory)) {
+                mkdir($outputDirectory, 0755, true);
+            }
+
+            // Save the analysis result as a JSON file
+            $outputFilePath = $outputDirectory . '/' . $outputFileName;
+            file_put_contents($outputFilePath, json_encode($result, JSON_PRETTY_PRINT));
+
+            // Save the output path to the database
+            $xray->output_image = 'xrayOutputs/' . $outputFileName;
+            $xray->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Analysis successful',
+                'output_file' => asset('xrayOutputs/' . $outputFileName),
+                'result' => $result
+            ]);
 
         } catch (\Exception $e) {
             \Log::error('Analysis failed', [
@@ -202,5 +241,86 @@ class XrayControl extends Controller
                 'error' => 'Analysis failed: ' . $e->getMessage()
             ], 500);
         }
+
+
+
+
     }
+    */
+
+        public function analyze(Request $request)
+        {
+            try {
+                // Validate the input
+                $request->validate([
+                    'image_id' => 'required|integer'
+                ]);
+
+                // Get the image ID
+                $imageId = $request->input('image_id');
+
+                // Retrieve the X-ray record from the database
+                $xray = xrays::find($imageId);
+
+                if (!$xray) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'X-ray record not found'
+                    ], 404);
+                }
+
+                // Construct the full image path
+                $fullPath = storage_path('app/public/' . $xray->path);
+
+                if (!file_exists($fullPath)) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'Image file not found'
+                    ], 404);
+                }
+
+                // Use the service to analyze the image
+                $result = $this->xrayAnalysisService->analyzeImage($fullPath);
+
+                // Generate a unique output file name
+                $outputFileName = pathinfo($xray->path, PATHINFO_FILENAME) . '_output_' . uniqid() . '.json';
+                $outputDirectory = public_path('xrayOutputs');
+                
+                // Create the output directory if it doesn't exist
+                if (!file_exists($outputDirectory)) {
+                    mkdir($outputDirectory, 0755, true);
+                }
+
+                // Save the full analysis result including the Base64 image
+                $outputFilePath = $outputDirectory . '/' . $outputFileName;
+                file_put_contents($outputFilePath, json_encode($result, JSON_PRETTY_PRINT));
+
+                // Save the output path to the database
+                $xray->output_image = 'xrayOutputs/' . $outputFileName;
+                $xray->save();
+
+                // Return the full analysis result, including the Base64 image
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Analysis successful',
+                    'output_file' => asset('xrayOutputs/' . $outputFileName),
+                    'result' => $result,
+                    'flask_analysis' => $result['flask_analysis'] // Includes the Base64 image
+                ]);
+
+            } catch (\Exception $e) {
+                \Log::error('Analysis failed', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Analysis failed: ' . $e->getMessage()
+                ], 500);
+            }
+        }
+
+
+
 }

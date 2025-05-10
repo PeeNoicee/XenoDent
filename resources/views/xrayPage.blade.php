@@ -24,6 +24,8 @@
             <div id="xray-preview" class="xray-preview">
                 <p>No Image Selected</p>
             </div>
+            <div id="analysis-results"></div>
+            <input type="hidden" id="uploaded-image-id" name="img_id">
             <div id="gallery-dropdown" class="gallery-dropdown"></div>
         </div>
     </div>
@@ -292,8 +294,15 @@ document.getElementById('xray-upload-form').addEventListener('submit', function(
                 
                 preview.appendChild(img);
 
-                
-            }
+                const imageIdElement = document.getElementById('uploaded-image-id');
+                if (imageIdElement) {
+                    imageIdElement.value = data.image_id;
+                } else {
+                    console.error('Image ID element not found');
+                }
+
+                console.log("Uploaded Image ID:", data.image_id); // For debugging
+                }
 
             updateXrayCount();
         })
@@ -345,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// Add analyze button click handler
+/* Add analyze button click handler
 document.addEventListener('DOMContentLoaded', () => {
     const analyzeButton = document.querySelector('.btn-outline-primary');
     if (analyzeButton) {
@@ -437,6 +446,228 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// Add analyze button click handler
+document.addEventListener('DOMContentLoaded', () => {
+    const analyzeButton = document.querySelector('.btn-outline-primary');
+    if (analyzeButton) {
+        analyzeButton.addEventListener('click', function() {
+            const preview = document.getElementById('xray-preview');
+            const img = preview.querySelector('img');
+            const imageIdElement = document.getElementById('uploaded-image-id');
+
+            if (!img || !img.src || !imageIdElement || !imageIdElement.value) {
+                alert('Please upload an X-ray image first');
+                return;
+            }
+
+            const originalText = this.textContent;
+            this.textContent = 'Analyzing...';
+            this.disabled = true;
+
+            const imageId = imageIdElement.value;
+
+            fetch("{{ route('analyze') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    image_id: imageId
+                })
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    if (data.flask_analysis && data.flask_analysis.image) {
+                        const analyzedImg = document.createElement('img');
+                        analyzedImg.src = 'data:image/png;base64,' + data.flask_analysis.image;
+                        analyzedImg.style.maxWidth = '100%';
+                        analyzedImg.style.maxHeight = '100%';
+                        analyzedImg.style.objectFit = 'contain';
+                        analyzedImg.alt = "Analyzed X-ray";
+                        
+                        analyzedImg.onload = function() {
+                            preview.innerHTML = '';
+                            preview.appendChild(analyzedImg);
+
+                            // Add the analyzed image to the gallery
+                            const gallery = document.getElementById('gallery-dropdown');
+                            const galleryImg = document.createElement('img');
+                            galleryImg.src = analyzedImg.src;
+                            galleryImg.alt = 'Analyzed X-ray';
+                            galleryImg.style.width = '100px';
+                            galleryImg.style.margin = '5px';
+                            galleryImg.style.cursor = 'pointer';
+
+                            galleryImg.addEventListener('click', () => {
+                                preview.innerHTML = '';
+                                const fullImg = document.createElement('img');
+                                fullImg.src = galleryImg.src;
+                                fullImg.alt = 'Analyzed X-ray';
+                                fullImg.style.maxWidth = '100%';
+                                fullImg.style.maxHeight = '100%';
+                                fullImg.style.objectFit = 'contain';
+                                preview.appendChild(fullImg);
+                            });
+
+                            gallery.appendChild(galleryImg);
+                        };
+                        
+                        analyzedImg.onerror = function() {
+                            alert('Failed to load analyzed image. Please try again.');
+                        };
+                    } else if (data.api_error) {
+                        alert('Could not connect to analysis server. Please make sure the Flask server is running.');
+                    }
+                } else {
+                    throw new Error(data.error || 'Analysis failed');
+                }
+            })
+            .catch(error => {
+                alert('Analysis failed: ' + error.message);
+            })
+            .finally(() => {
+                this.textContent = originalText;
+                this.disabled = false;
+            });
+        });
+    }
+});
+*/
+
+document.addEventListener('DOMContentLoaded', () => {
+    const analyzeButton = document.querySelector('.btn-outline-primary');
+    if (analyzeButton) {
+        analyzeButton.addEventListener('click', function() {
+            const preview = document.getElementById('xray-preview');
+            const img = preview.querySelector('img');
+            const imageIdElement = document.getElementById('uploaded-image-id');
+
+            if (!img || !img.src || !imageIdElement || !imageIdElement.value) {
+                alert('Please upload an X-ray image first');
+                return;
+            }
+
+            const originalText = this.textContent;
+            this.textContent = 'Analyzing...';
+            this.disabled = true;
+
+            const imageId = imageIdElement.value;
+
+            fetch("{{ route('analyze') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    image_id: imageId
+                })
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    const { flask_analysis, output_file } = data;
+
+                    // Display the analyzed image
+                    if (flask_analysis && flask_analysis.image) {
+                        const analyzedImg = document.createElement('img');
+                        analyzedImg.src = 'data:image/png;base64,' + flask_analysis.image;
+                        analyzedImg.style.maxWidth = '100%';
+                        analyzedImg.style.maxHeight = '100%';
+                        analyzedImg.style.objectFit = 'contain';
+                        analyzedImg.alt = "Analyzed X-ray";
+
+                        analyzedImg.onload = function() {
+                            preview.innerHTML = '';
+                            preview.appendChild(analyzedImg);
+
+                            // Add the analyzed image to the gallery
+                            const gallery = document.getElementById('gallery-dropdown');
+                            const galleryImg = document.createElement('img');
+                            galleryImg.src = analyzedImg.src;
+                            galleryImg.alt = 'Analyzed X-ray';
+                            galleryImg.style.width = '100px';
+                            galleryImg.style.margin = '5px';
+                            galleryImg.style.cursor = 'pointer';
+
+                            galleryImg.addEventListener('click', () => {
+                                preview.innerHTML = '';
+                                const fullImg = document.createElement('img');
+                                fullImg.src = galleryImg.src;
+                                fullImg.alt = 'Analyzed X-ray';
+                                fullImg.style.maxWidth = '100%';
+                                fullImg.style.maxHeight = '100%';
+                                fullImg.style.objectFit = 'contain';
+                                preview.appendChild(fullImg);
+                            });
+
+                            gallery.appendChild(galleryImg);
+                        };
+
+                        analyzedImg.onerror = function() {
+                            alert('Failed to load analyzed image. Please try again.');
+                        };
+                    }
+
+                    // Display the predictions if available
+                    if (flask_analysis && flask_analysis.predictions) {
+                        const resultsContainer = document.getElementById('analysis-results');
+                        resultsContainer.innerHTML = '';
+
+                        flask_analysis.predictions.forEach(prediction => {
+                            const predictionElement = document.createElement('div');
+                            predictionElement.classList.add('prediction');
+                            predictionElement.style.marginBottom = '10px';
+                            predictionElement.innerHTML = `
+                                <strong>Class:</strong> ${prediction.class} <br>
+                                <strong>Confidence:</strong> ${(prediction.confidence * 100).toFixed(2)}% <br>
+                                <strong>Position:</strong> (x: ${prediction.x.toFixed(2)}, y: ${prediction.y.toFixed(2)}) <br>
+                                <strong>Size:</strong> (width: ${prediction.width.toFixed(2)}, height: ${prediction.height.toFixed(2)}) <br>
+                                <strong>ID:</strong> ${prediction.detection_id}
+                            `;
+                            resultsContainer.appendChild(predictionElement);
+                        });
+                    }
+
+                    // Provide a link to the saved output file for later access
+                    if (output_file) {
+                        const outputLink = document.createElement('a');
+                        outputLink.href = output_file;
+                        outputLink.textContent = 'Download Analysis File';
+                        outputLink.target = '_blank';
+                        outputLink.style.display = 'block';
+                        outputLink.style.marginTop = '10px';
+                        preview.appendChild(outputLink);
+                    }
+
+                } else if (data.api_error) {
+                    alert('Could not connect to analysis server. Please make sure the Flask server is running.');
+                }
+            })
+            .catch(error => {
+                alert('Analysis failed: ' + error.message);
+            })
+            .finally(() => {
+                this.textContent = originalText;
+                this.disabled = false;
+            });
+        });
+    }
+});
+
 
 
 </script>
