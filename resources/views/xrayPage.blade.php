@@ -593,10 +593,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
             })
             .then(async response => {
+                const data = await response.json();
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(data.error || `HTTP error! status: ${response.status}`);
                 }
-                return response.json();
+                return data;
             })
             .then(data => {
                 if (data.success) {
@@ -648,23 +649,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Display the predictions if available
                     if (flask_analysis && flask_analysis.predictions) {
                         const resultsContainer = document.getElementById('analysis-results');
-                        resultsContainer.innerHTML = '';
+                        if (resultsContainer) {
+                            resultsContainer.innerHTML = '';
 
-                        flask_analysis.predictions.forEach(prediction => {
-                            const predictionElement = document.createElement('div');
-                            predictionElement.classList.add('prediction');
-                            predictionElement.style.marginBottom = '10px';
-                            predictionElement.innerHTML = `<br>
-                                <strong>Class:</strong> ${prediction.class} <br>
-                                <strong>Confidence:</strong> ${(prediction.confidence * 100).toFixed(2)}% <br>
-                                <strong>Position:</strong> (x: ${prediction.x.toFixed(2)}, y: ${prediction.y.toFixed(2)}) <br>
-                                <strong>Size:</strong> (width: ${prediction.width.toFixed(2)}, height: ${prediction.height.toFixed(2)}) <br>
-                            `;
-                            resultsContainer.appendChild(predictionElement);
-                        });
-
-                        
-
+                            flask_analysis.predictions.forEach(prediction => {
+                                const predictionElement = document.createElement('div');
+                                predictionElement.classList.add('prediction');
+                                predictionElement.style.marginBottom = '10px';
+                                predictionElement.innerHTML = `<br>
+                                    <strong>Class:</strong> ${prediction.class} <br>
+                                    <strong>Confidence:</strong> ${(prediction.confidence * 100).toFixed(2)}% <br>
+                                    <strong>Position:</strong> (x: ${prediction.x.toFixed(2)}, y: ${prediction.y.toFixed(2)}) <br>
+                                    <strong>Size:</strong> (width: ${prediction.width.toFixed(2)}, height: ${prediction.height.toFixed(2)}) <br>
+                                `;
+                                resultsContainer.appendChild(predictionElement);
+                            });
+                        }
                     }
 
                     // Provide a link to the saved output file for later access
