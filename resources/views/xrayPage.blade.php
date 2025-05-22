@@ -183,6 +183,13 @@ document.getElementById('xray-upload-form').addEventListener('submit', function(
     const form = e.target;
     const formData = new FormData(form);
     const fileInput = form.querySelector('#image-input');
+    const patientId = document.getElementById('patientId').value;
+    
+    // Check if patient is selected
+    if (!patientId) {
+        alert('Please select a patient before uploading');
+        return;
+    }
     
     if (!fileInput.files.length) {
         alert('Please select a file to upload');
