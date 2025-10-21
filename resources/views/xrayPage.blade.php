@@ -10,8 +10,7 @@
             <div class="button-container">
 
             @if($prem === 0)
-                <div>Analyze Limit 5, <br>
-                Current count:  <span id="xray-count-text"></span> </div>
+                <div>Analyze Limit: <span id="xray-count-text">{{ $xrayCount }}</span>/<span id="xray-limit-text">{{ $uploadLimit }}</span></div>
             @else
             @endif
                 <button type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" class="btn btn-outline-success mb-3 w-100"> UPLOAD </button>
@@ -293,6 +292,7 @@ document.getElementById('xray-upload-form').addEventListener('submit', function(
             return data;
         })
         .then(data => {
+            console.log('Upload response:', data); // Debug log
             if (data.png_path) {
                 const preview = document.getElementById('xray-preview');
                 if (!preview) {
@@ -309,6 +309,16 @@ document.getElementById('xray-upload-form').addEventListener('submit', function(
                 img.style.objectFit = 'contain';
                 img.alt = "X-ray preview";
                 
+                // Add error handling for image loading
+                img.onload = function() {
+                    console.log('Image loaded successfully:', data.png_path);
+                };
+                
+                img.onerror = function() {
+                    console.error('Failed to load image:', data.png_path);
+                    preview.innerHTML = '<p style="color: red;">Failed to load image. Please check if the file exists.</p>';
+                };
+                
                 preview.appendChild(img);
 
                 const imageIdElement = document.getElementById('uploaded-image-id');
@@ -319,6 +329,9 @@ document.getElementById('xray-upload-form').addEventListener('submit', function(
                 }
 
                 console.log("Uploaded Image ID:", data.image_id); // For debugging
+                
+                // Update count after successful upload (with small delay to ensure DB update)
+                setTimeout(updateXrayCount, 500);
                 }
 
             
@@ -351,17 +364,33 @@ function updateXrayCount() {
     })
     .then(response => response.json())
     .then(data => {
-        // Target the specific div
+        // Update count
         const countDiv = document.getElementById('xray-count-text');
         if (countDiv) {
-            countDiv.textContent = data.count; // Update the div with the new count
+            countDiv.textContent = data.count;
+        }
+        
+        // Update limit
+        const limitDiv = document.getElementById('xray-limit-text');
+        if (limitDiv) {
+            limitDiv.textContent = data.limit;
         }
     })
     .catch(error => console.error('Error fetching xray count:', error));
 }
 
-// Refresh the count every 5 seconds (or adjust the interval as needed)
-setInterval(updateXrayCount, 1000);
+// Force immediate update (useful after operations)
+function forceUpdateCount() {
+    updateXrayCount();
+}
+
+// Load count on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateXrayCount();
+});
+
+// Refresh the count every 2 seconds for more real-time updates
+setInterval(updateXrayCount, 2000);
 
 
 
@@ -457,6 +486,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         analyzedImg.onerror = function() {
                             alert('Failed to load analyzed image. Please try again.');
                         };
+                    } else if (data.flask_error) {
+                        alert(data.error || 'Could not connect to analysis server. Please make sure the Flask server is running.');
                     } else if (data.api_error) {
                         alert('Could not connect to analysis server. Please make sure the Flask server is running.');
                     }
@@ -551,6 +582,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         analyzedImg.onerror = function() {
                             alert('Failed to load analyzed image. Please try again.');
                         };
+                    } else if (data.flask_error) {
+                        alert(data.error || 'Could not connect to analysis server. Please make sure the Flask server is running.');
                     } else if (data.api_error) {
                         alert('Could not connect to analysis server. Please make sure the Flask server is running.');
                     }
@@ -610,7 +643,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.success) {
                     const { flask_analysis, output_file } = data;
 
-                    updateXrayCount();
+                    // Update count after successful analysis (with small delay to ensure DB update)
+                    setTimeout(updateXrayCount, 500);
 
                     // Display the analyzed image
                     if (flask_analysis && flask_analysis.image) {
@@ -686,6 +720,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
 
+                } else if (data.flask_error) {
+                    alert(data.error || 'Could not connect to analysis server. Please make sure the Flask server is running.');
                 } else if (data.api_error) {
                     alert('Could not connect to analysis server. Please make sure the Flask server is running.');
                 }
