@@ -7,6 +7,7 @@ use App\Models\authUser;
 use App\Models\xrays;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use App\Services\XrayAnalysisService;
 use Carbon\Carbon;
 
@@ -28,8 +29,20 @@ class XrayControl extends Controller
             ->whereNotNull('output_image')
             ->count();
 
-        // Use 'count' for consistency with the JavaScript function
-        return response()->json(['count' => $xrayCount]);
+        // Get the limit based on authentication status
+        $dentistAuth = authUser::select('authenticated')
+            ->where('name', Auth::user()->name)
+            ->first();
+
+        $limit = config('app.xray.upload_limit');
+        if($dentistAuth && (int) $dentistAuth->authenticated == 1){
+            $limit = config('app.xray.premium_limit');
+        }
+
+        return response()->json([
+            'count' => $xrayCount,
+            'limit' => $limit
+        ]);
     }
 
 
@@ -39,14 +52,14 @@ class XrayControl extends Controller
         $patientID = $request->input('patient_id');
 
             try {
-                \Log::info('Upload request received', [
+                Log::info('Upload request received', [
                     'hasFile' => $request->hasFile('image'),
                     'allFiles' => $request->allFiles(),
                     'allInput' => $request->all()
                 ]);
 
                 if (!$request->hasFile('image')) {
-                    \Log::error('No file uploaded');
+                    Log::error('No file uploaded');
                     return response()->json(['error' => 'No file uploaded'], 400);
                 }
             
@@ -56,7 +69,7 @@ class XrayControl extends Controller
                 
                 // Validate file type
                 if (!$file->isValid()) {
-                    \Log::error('Invalid file upload', [
+                    Log::error('Invalid file upload', [
                         'error' => $file->getError(),
                         'mime' => $file->getMimeType()
                     ]);
@@ -65,14 +78,14 @@ class XrayControl extends Controller
 
                 // Validate file is an image
                 if (!str_starts_with($file->getMimeType(), 'image/')) {
-                    \Log::error('Invalid file type', [
+                    Log::error('Invalid file type', [
                         'mime' => $file->getMimeType()
                     ]);
                     return response()->json(['error' => 'File must be an image'], 400);
                 }
 
                 $originalName = $file->getClientOriginalName();
-                \Log::info('Storing file', [
+                Log::info('Storing file', [
                     'originalName' => $originalName,
                     'mime' => $file->getMimeType()
                 ]);
@@ -80,7 +93,7 @@ class XrayControl extends Controller
                 $path = $file->storeAs('xray_images', $originalName, 'public');
             
                 if (!$path) {
-                    \Log::error('Failed to store file');
+                    Log::error('Failed to store file');
                     return response()->json(['error' => 'Failed to store file'], 500);
                 }
 
@@ -94,7 +107,7 @@ class XrayControl extends Controller
                 // Generate the correct URL for the stored file
                 $url = asset('storage/' . $path);
                 
-                \Log::info('File uploaded successfully', [
+                Log::info('File uploaded successfully', [
                     'path' => $path,
                     'url' => $url
                 ]);
@@ -107,7 +120,7 @@ class XrayControl extends Controller
                     'image_id' => $xray->id
                 ]);
             } catch (\Exception $e) {
-                \Log::error('Upload failed', [
+                Log::error('Upload failed', [
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString()
                 ]);
@@ -235,7 +248,7 @@ class XrayControl extends Controller
                 ->where('name', Auth::user()->name)
                 ->first();
 
-                $uploadCount = 5;
+                $uploadCount = config('app.xray.upload_limit');
 
                 $dateNow = Carbon::today()->setTimezone('UTC');
                 
@@ -246,7 +259,7 @@ class XrayControl extends Controller
 
                 if($dentistAuth && (int) $dentistAuth->authenticated == 1){
 
-                    $uploadCount = 9999;
+                    $uploadCount = config('app.xray.premium_limit');
 
                 }
                 
@@ -290,6 +303,20 @@ class XrayControl extends Controller
                         // Use the service to analyze the image
                         $result = $this->xrayAnalysisService->analyzeImage($fullPath);
 
+                        // Check if Flask API is running
+                        if (isset($result['api_error'])) {
+                            return response()->json([
+                                'success' => false,
+                                'error' => 'Flask server is not running. Please start the Flask backend server and try again.',
+                                'flask_error' => true
+                            ], 500);
+                        }
+
+                        // Check if analysis was successful by verifying flask_analysis exists
+                        if (!isset($result['flask_analysis'])) {
+                            throw new \Exception('Analysis failed: Undefined array key "flask_analysis"');
+                        }
+
                         // Generate a unique output file name
                         $outputFileName = pathinfo($xray->path, PATHINFO_FILENAME) . '_output_' . uniqid() . '.json';
                         $outputDirectory = public_path('xrayOutputs');
@@ -303,7 +330,7 @@ class XrayControl extends Controller
                         $outputFilePath = $outputDirectory . '/' . $outputFileName;
                         file_put_contents($outputFilePath, json_encode($result, JSON_PRETTY_PRINT));
 
-                        // Save the output path to the database
+                        // Only save the output path to the database if analysis was successful
                         $xray->output_image = 'xrayOutputs/' . $outputFileName;
                         $xray->save();
 
@@ -317,7 +344,7 @@ class XrayControl extends Controller
                         ]);
 
                     } catch (\Exception $e) {
-                        \Log::error('Analysis failed', [
+                        Log::error('Analysis failed', [
                             'error' => $e->getMessage(),
                             'trace' => $e->getTraceAsString()
                         ]);
