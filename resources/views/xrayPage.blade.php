@@ -700,8 +700,43 @@ document.addEventListener('DOMContentLoaded', () => {
                         };
                     }
 
-                    // Analysis results are now displayed directly on the image
-                    // No separate text results needed
+                    // Display patient information if available
+                    if (data.patient_info) {
+                        const patientInfoContainer = document.createElement('div');
+                        patientInfoContainer.style.marginTop = '15px';
+                        patientInfoContainer.style.padding = '15px';
+                        patientInfoContainer.style.backgroundColor = '#f8f9fa';
+                        patientInfoContainer.style.border = '1px solid #dee2e6';
+                        patientInfoContainer.style.borderRadius = '8px';
+                        patientInfoContainer.style.fontFamily = 'Arial, sans-serif';
+
+                        let patientInfoHTML = `
+                            <h5 style="margin-bottom: 10px; color: #495057;">📋 Patient Information</h5>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div><strong>Patient:</strong> ${data.patient_info.patient_name}</div>
+                                <div><strong>Dentist:</strong> ${data.patient_info.dentist_name}</div>
+                                <div><strong>Analysis Date:</strong> ${new Date(data.patient_info.analysis_date).toLocaleString()}</div>
+                                <div><strong>Patient ID:</strong> ${data.patient_info.patient_id}</div>
+                            </div>
+                        `;
+
+                        // Add detailed patient info if available
+                        if (data.patient_info.patient_details) {
+                            const details = data.patient_info.patient_details;
+                            patientInfoHTML += `
+                                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #dee2e6;">
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                        ${details.birth_date ? `<div><strong>Birth Date:</strong> ${details.birth_date}</div>` : ''}
+                                        ${details.gender ? `<div><strong>Gender:</strong> ${details.gender}</div>` : ''}
+                                        ${details.contact_number ? `<div><strong>Contact:</strong> ${details.contact_number}</div>` : ''}
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        patientInfoContainer.innerHTML = patientInfoHTML;
+                        preview.appendChild(patientInfoContainer);
+                    }
 
                     // Provide a link to the saved output file for later access
                     if (output_file) {

@@ -120,36 +120,7 @@ def predict():
             text_y = background_rect_y1 + label_size[1] + padding
             cv2.putText(image, label, (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 0), thickness)
 
-        # Add color legend
-        legend_height = 140
-        legend_x = image.shape[1] - 300
-        legend_y = image.shape[0] - legend_height - 10
-
-        # Draw legend background
-        overlay = image.copy()
-        cv2.rectangle(overlay, (legend_x, legend_y), (image.shape[1], image.shape[0]), (255, 255, 255), -1)
-        cv2.addWeighted(overlay, 0.7, image, 0.3, 0, image)
-
-        # Draw border for the legend
-        cv2.rectangle(image, (legend_x, legend_y), (image.shape[1], image.shape[0]), (0, 0, 0), 2)
-
-        # Draw color boxes and labels
-        y_offset = legend_y + 10
-        for label, color in color_map.items():
-            capitalized_label = label.title()
-            cv2.rectangle(image, (legend_x + 10, y_offset), (legend_x + 30, y_offset + 20), color, -1)
-            
-            label_background_x1 = legend_x + 40
-            label_background_y1 = y_offset - 10
-            label_background_x2 = label_background_x1 + 180
-            label_background_y2 = y_offset + 15
-
-            overlay = image.copy()
-            cv2.rectangle(overlay, (label_background_x1, label_background_y1), (label_background_x2, label_background_y2), (255, 255, 255), -1)
-            cv2.addWeighted(overlay, 0.7, image, 0.3, 0, image)
-
-            cv2.putText(image, capitalized_label, (label_background_x1 + 5, y_offset + 15), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
-            y_offset += 30
+        # Legend removed for cleaner image display
 
         # Convert the modified image back to base64
         _, buffer = cv2.imencode('.png', image)

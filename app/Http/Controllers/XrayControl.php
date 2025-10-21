@@ -343,13 +343,32 @@ class XrayControl extends Controller
                         $xray->output_image = 'xrayOutputs/' . $outputFileName;
                         $xray->save();
 
-                        // Return the full analysis result, including the Base64 image
+                        // Get patient information for display
+                        $patientInfo = [
+                            'patient_name' => $xray->patient_name,
+                            'patient_id' => $xray->patient_id,
+                            'dentist_name' => $xray->edited_by,
+                            'analysis_date' => now()->format('Y-m-d H:i:s')
+                        ];
+
+                        // Add detailed patient info if patient relationship exists
+                        if ($xray->patient) {
+                            $patientInfo['patient_details'] = [
+                                'full_name' => $xray->patient->name,
+                                'birth_date' => $xray->patient->birth_date,
+                                'gender' => $xray->patient->gender,
+                                'contact_number' => $xray->patient->contact_number
+                            ];
+                        }
+
+                        // Return the full analysis result, including patient information
                         return response()->json([
                             'success' => true,
                             'message' => 'Analysis successful',
                             'output_file' => asset('xrayOutputs/' . $outputFileName),
                             'result' => $result,
-                            'flask_analysis' => $result['flask_analysis'] // Includes the Base64 image
+                            'flask_analysis' => $result['flask_analysis'], // Includes the Base64 image
+                            'patient_info' => $patientInfo
                         ]);
 
                     } catch (\Exception $e) {
