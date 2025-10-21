@@ -31,7 +31,7 @@
         PURCHASE SUCCESS!
       </div>
       <div class="modal-footer">
-        <a href="{{ url('homepage') }}" class="btn btn-primary">Continue</a>
+        <button id="continue-btn" class="btn btn-primary">Continue</button>
       </div>
     </div>
   </div>
@@ -78,6 +78,27 @@
         document.getElementById('fade').classList.add('loaded');
     });
 
+    // Get return parameter from URL or default to homepage
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnParam = urlParams.get('return');
+    const defaultRedirect = "{{ url('homepage') }}";
+    
+    // Determine where to redirect after purchase
+    let redirectUrl = defaultRedirect;
+    
+    if (returnParam === 'xray') {
+        redirectUrl = "{{ route('xray') }}";
+    } else if (returnParam === 'homepage') {
+        redirectUrl = "{{ route('homepage') }}";
+    } else if (returnParam === 'dashboard') {
+        redirectUrl = "{{ route('dashboard') }}";
+    } else if (returnParam === 'patientManagement') {
+        redirectUrl = "{{ route('patientManagement') }}";
+    } else if (returnParam && returnParam.startsWith('/')) {
+        // If it's a custom path, use it directly
+        redirectUrl = returnParam;
+    }
+
     document.getElementById('updateUserForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -103,6 +124,11 @@
             console.error('Error:', error);
             alert('Something went wrong while processing your purchase.');
         });
+    });
+
+    // Handle continue button click
+    document.getElementById('continue-btn').addEventListener('click', function() {
+        window.location.href = redirectUrl;
     });
 </script>
 @endsection

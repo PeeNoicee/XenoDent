@@ -29,11 +29,9 @@ class XrayControl extends Controller
             ->whereNotNull('output_image')
             ->count();
 
-        // Get the limit based on authentication status
-        $dentistAuth = authUser::select('authenticated')
-            ->where('user_id', Auth::user()->id)
-            ->where('authenticated', 1)
-            ->first();
+        // Get the limit based on authentication status using relationship
+        $authUser = Auth::user()->authUser;
+        $dentistAuth = $authUser && $authUser->authenticated === 1;
 
         $limit = config('app.xray.upload_limit');
         if($dentistAuth){
@@ -138,6 +136,17 @@ class XrayControl extends Controller
 
 
     public function getImages(){
+
+        // Check if user is premium using relationship
+        $authUser = Auth::user()->authUser;
+        $isPremium = $authUser && $authUser->authenticated === 1;
+
+        if (!$isPremium) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Gallery access is restricted to premium users only.'
+            ], 403);
+        }
 
         $xrays = xrays::all(['id','path']);
 
@@ -245,10 +254,8 @@ class XrayControl extends Controller
         public function analyze(Request $request)
         {
 
-                $dentistAuth = authUser::select('authenticated')
-                ->where('user_id', Auth::user()->id)
-                ->where('authenticated', 1)
-                ->first();
+                $authUser = Auth::user()->authUser;
+                $dentistAuth = $authUser && $authUser->authenticated === 1;
 
                 $uploadCount = config('app.xray.upload_limit');
 

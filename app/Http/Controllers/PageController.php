@@ -16,18 +16,15 @@ class PageController extends Controller
         // Fetch the user's name
         $userName = Auth::user()->name;
     
-        // Check if the user is authenticated as a premium user
-        $prem = authUser::select()->where('user_id', Auth::user()->id)
-            ->where('authenticated', 1)->first();
+        // Use consistent premium check method
+        $prem = $this->ifPrem();
     
-        if (is_null($prem)) {
+        if ($prem == 0) {
             // If the user is not premium
             $welcome = "WELCOME " . $userName . "!";
-            $prem = 0;
         } else {
             // If the user is premium
             $welcome = "WELCOME " . $userName . " (PREMIUM USER)!";
-            $prem = 1;  // Set it to 1 instead of the model object
         }
     
         // Pass the $prem variable to the view
@@ -46,7 +43,7 @@ class PageController extends Controller
 
         $prem = $this->ifPrem();
         $dentistName = Auth::user()->name;
-        $listOfUsers = Patient::select()->get();
+        $listOfUsers = Auth::user()->patients;
 
         $dateNow = Carbon::today()->setTimezone('UTC');
 
@@ -67,10 +64,10 @@ class PageController extends Controller
 
     public function ifPrem(){
 
-        $prem = authUser::select()->where('user_id', Auth::user()->id)
-        ->where('authenticated', 1)->first();
-
-        if(is_null($prem)){   
+        // Use relationship for better performance
+        $authUser = Auth::user()->authUser;
+        
+        if(is_null($authUser) || $authUser->authenticated !== 1){   
             return 0;
         }
 

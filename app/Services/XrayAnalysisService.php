@@ -54,6 +54,9 @@ class XrayAnalysisService
                 throw new \Exception('Invalid JSON output from Python script');
             }
 
+            // Note: Tooth position mapping is now handled in the Flask backend
+            // No additional processing needed here as Flask already returns enhanced predictions
+
             return $result;
 
         } catch (\Exception $e) {

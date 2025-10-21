@@ -47,7 +47,7 @@
 
             @if($prem === 0)
                 <div class="d-flex">
-                    <a href = "{{url ('premiumPage') }}">
+                    <a href="#" onclick="goToPremium()" class="premium-link">
                     <button class="btn btn-outline-success">Go PREMIUM</button>
                     </a>
                 </div>
@@ -104,7 +104,7 @@
 
             @if($prem === 0)
                 <div class="d-flex">
-                    <a href = "{{url ('premiumPage') }}">
+                    <a href="#" onclick="goToPremium()" class="premium-link">
                     <button class="btn btn-outline-success">Go PREMIUM</button>
                     </a>
                 </div>
@@ -150,3 +150,28 @@
         </div>
     </div>
 </nav>
+
+<script>
+function goToPremium() {
+    // Get current page path
+    const currentPath = window.location.pathname;
+    let returnParam = '';
+    
+    // Determine return parameter based on current page
+    if (currentPath.includes('xrayPage') || currentPath.includes('xray')) {
+        returnParam = 'xray';
+    } else if (currentPath.includes('homepage') || currentPath.includes('home')) {
+        returnParam = 'homepage';
+    } else if (currentPath.includes('dashboard')) {
+        returnParam = 'dashboard';
+    } else if (currentPath.includes('patientManagement')) {
+        returnParam = 'patientManagement';
+    } else {
+        // Default fallback - use current path
+        returnParam = encodeURIComponent(currentPath);
+    }
+    
+    // Redirect to premium page with return parameter
+    window.location.href = "{{ route('premiumPage') }}?return=" + returnParam;
+}
+</script>

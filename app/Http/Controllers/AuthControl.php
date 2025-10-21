@@ -20,33 +20,36 @@ class AuthControl extends Controller
     public function authorizeUser($id)
     {
         $userId = (int) $id;
-        $userCheck = authUser::select()->where('user_id', $userId)->first();
+        $userCheck = authUser::where('user_id', $userId)->first();
         $set = "";
     
         if (is_null($userCheck)) {
             // If the user is not in the database, create a new user record with authenticated = 0
-            $customer = new authUser;
-            $customer->name = Auth::user()->name;
-            $customer->user_id = Auth::user()->id;
-            $customer->authenticated = 0; // Set as 0 since this is a new user
-            $customer->edited_by = Auth::user()->name;
-    
-            $customer->save();
-            $set = "First";
+            try {
+                $customer = authUser::create([
+                    'name' => Auth::user()->name,
+                    'user_id' => Auth::user()->id,
+                    'authenticated' => 0,
+                    'edited_by' => Auth::user()->name,
+                ]);
+                $set = "First";
+            } catch (\Exception $e) {
+                // If creation fails (e.g., due to unique constraint), try to find existing record
+                $userCheck = authUser::where('user_id', $userId)->first();
+                if ($userCheck) {
+                    $set = "Found Existing";
+                } else {
+                    throw $e; // Re-throw if it's a different error
+                }
+            }
         } else {
-            // If the user already exists, update or create the record
-            // But only set authenticated to 0 if it's not already set to 1
+            // If the user already exists, update only if not premium
             if ($userCheck->authenticated !== 1) {
-                $customerDetails = authUser::updateOrCreate(
-                    ['user_id' => $userId],
-                    [
-                        'name' => Auth::user()->name,
-                        'user_id' => Auth::user()->id,
-                        'authenticated' => 0, // Keep as 0 unless it's already a premium user
-                        'edited_by' => Auth::user()->name,
-                    ]
-                );
-                $set = "Done";
+                $userCheck->update([
+                    'name' => Auth::user()->name,
+                    'edited_by' => Auth::user()->name,
+                ]);
+                $set = "Updated";
             } else {
                 // If the user is already authenticated as premium, leave it unchanged
                 $set = "Already Premium";
@@ -85,16 +88,28 @@ class AuthControl extends Controller
 
     public function updateUser(Request $request) {
         try {
-            // Validate and update user details
-            $customerDetails = authUser::updateOrCreate(
-                ['user_id' => Auth::user()->id],
-                [
+            $userId = Auth::user()->id;
+            
+            // First, try to find existing record
+            $existingUser = authUser::where('user_id', $userId)->first();
+            
+            if ($existingUser) {
+                // Update existing record
+                $existingUser->update([
                     'name' => Auth::user()->name,
-                    'user_id' => Auth::user()->id,
                     'authenticated' => 1,
                     'edited_by' => Auth::user()->name,
-                ]
-            );
+                ]);
+                $customerDetails = $existingUser;
+            } else {
+                // Create new record only if none exists
+                $customerDetails = authUser::create([
+                    'name' => Auth::user()->name,
+                    'user_id' => $userId,
+                    'authenticated' => 1,
+                    'edited_by' => Auth::user()->name,
+                ]);
+            }
             
             // Return success response or handle further actions
             return response()->json(['message' => 'User updated successfully!']);

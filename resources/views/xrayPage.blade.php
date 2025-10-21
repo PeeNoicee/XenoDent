@@ -21,7 +21,11 @@
                 @else
                  <button class="btn btn-outline-primary w-100 mb-3">ANALYZE</button>
                 @endif
+                @if($prem === 0)
+                <button id="toggle-gallery" class="btn btn-outline-secondary w-100">Show X-ray Gallery (Premium)</button>
+                @else
                 <button id="toggle-gallery" class="btn btn-outline-secondary w-100">Show X-ray Gallery</button>
+                @endif
             </div>
         </div>
 
@@ -32,7 +36,7 @@
             </div>
             @if($prem === 0)
             @else
-                <div id="analysis-results"></div>
+                <!-- Analysis results are now displayed directly on the image -->
             @endif
             <input type="hidden" id="uploaded-image-id" name="img_id">
             <div id="gallery-dropdown" class="gallery-dropdown"></div>
@@ -398,10 +402,19 @@ setInterval(updateXrayCount, 2000);
 document.addEventListener('DOMContentLoaded', () => {
     const toggleButton = document.getElementById('toggle-gallery');
     const gallery = document.getElementById('gallery-dropdown');
+    const isPremium = @json($prem); // Pass premium status to JavaScript
     
     gallery.style.display = 'none';
 
     toggleButton.addEventListener('click', function () {
+        // Check if user is premium
+        if (isPremium === 0) {
+            // Redirect non-premium users to premium page with return URL
+            window.location.href = "{{ route('premiumPage') }}?return=xray";
+            return;
+        }
+        
+        // Premium users can toggle gallery
         if (gallery.style.display === 'none' || gallery.style.display === '') {
             gallery.style.display = 'block';
         } else {
@@ -687,26 +700,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         };
                     }
 
-                    // Display the predictions if available
-                    if (flask_analysis && flask_analysis.predictions) {
-                        const resultsContainer = document.getElementById('analysis-results');
-                        if (resultsContainer) {
-                            resultsContainer.innerHTML = '';
-
-                            flask_analysis.predictions.forEach(prediction => {
-                                const predictionElement = document.createElement('div');
-                                predictionElement.classList.add('prediction');
-                                predictionElement.style.marginBottom = '10px';
-                                predictionElement.innerHTML = `<br>
-                                    <strong>Class:</strong> ${prediction.class} <br>
-                                    <strong>Confidence:</strong> ${(prediction.confidence * 100).toFixed(2)}% <br>
-                                    <strong>Position:</strong> (x: ${prediction.x.toFixed(2)}, y: ${prediction.y.toFixed(2)}) <br>
-                                    <strong>Size:</strong> (width: ${prediction.width.toFixed(2)}, height: ${prediction.height.toFixed(2)}) <br>
-                                `;
-                                resultsContainer.appendChild(predictionElement);
-                            });
-                        }
-                    }
+                    // Analysis results are now displayed directly on the image
+                    // No separate text results needed
 
                     // Provide a link to the saved output file for later access
                     if (output_file) {

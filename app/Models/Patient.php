@@ -17,9 +17,29 @@ class Patient extends Model
         'address',
         'medical_history',
         'allergies',
-        'notes'
+        'notes',
+        'user_id'
     ];
 
+    /**
+     * Get the user (dentist) that owns the patient.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Get the dentist name for this patient.
+     */
+    public function getDentistName()
+    {
+        return $this->user ? $this->user->name : 'Unknown';
+    }
+
+    /**
+     * Get all X-rays for this patient.
+     */
     public function xrays()
     {
         return $this->hasMany(xrays::class, 'patient_id');

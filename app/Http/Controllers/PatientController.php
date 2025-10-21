@@ -4,21 +4,18 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Patient;
+use Illuminate\Support\Facades\Auth;
 
 class PatientController extends Controller
 {
     public function displayPatientManagement()
     {
-        // Fetch all patients from the database
-        $patients = Patient::all();
+        // Fetch only patients belonging to the current user (dentist)
+        $patients = Auth::user()->patients;
     
-        // Get the current logged-in user
-        $user = auth()->user();
-    
-        // Check if the user is premium
-        $prem = $user && $user->authenticated == 1; // Assuming 'authenticated' field signifies premium status
+        // Check if the user is premium using the new method
+        $prem = Auth::user()->getPremiumStatus();
         
-    
         // Pass the data to the view
         return view('patientManagement', compact('prem', 'patients'));
     }
@@ -45,15 +42,19 @@ class PatientController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        Patient::create($request->all());
+        // Create patient and assign to current user
+        $patientData = $request->all();
+        $patientData['user_id'] = Auth::id();
+        
+        Patient::create($patientData);
 
         return redirect()->route('patientManagement')->with('success', 'Patient added successfully.');
     }
 
     public function edit($id)
     {
-        // Fetch the patient by ID
-        $patient = Patient::findOrFail($id);
+        // Fetch the patient by ID, ensuring it belongs to current user
+        $patient = Auth::user()->patients()->findOrFail($id);
     
         // Pass the patient data to the view
         return view('editPatient', compact('patient'));
@@ -74,8 +75,8 @@ class PatientController extends Controller
             'notes' => 'nullable|string',
         ]);
     
-        // Find the patient and update their data
-        $patient = Patient::findOrFail($id);
+        // Find the patient and update their data, ensuring it belongs to current user
+        $patient = Auth::user()->patients()->findOrFail($id);
         $patient->update($request->all());
     
         // Redirect back to the patient management page
@@ -86,7 +87,8 @@ class PatientController extends Controller
     // Delete patient function (optional)
     public function destroy($id)
     {
-        $patient = Patient::findOrFail($id);
+        // Find and delete patient, ensuring it belongs to current user
+        $patient = Auth::user()->patients()->findOrFail($id);
         $patient->delete();
 
         return redirect()->route('patientManagement')->with('success', 'Patient deleted successfully.');
