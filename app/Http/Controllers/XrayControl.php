@@ -31,11 +31,12 @@ class XrayControl extends Controller
 
         // Get the limit based on authentication status
         $dentistAuth = authUser::select('authenticated')
-            ->where('name', Auth::user()->name)
+            ->where('user_id', Auth::user()->id)
+            ->where('authenticated', 1)
             ->first();
 
         $limit = config('app.xray.upload_limit');
-        if($dentistAuth && (int) $dentistAuth->authenticated == 1){
+        if($dentistAuth){
             $limit = config('app.xray.premium_limit');
         }
 
@@ -245,19 +246,20 @@ class XrayControl extends Controller
         {
 
                 $dentistAuth = authUser::select('authenticated')
-                ->where('name', Auth::user()->name)
+                ->where('user_id', Auth::user()->id)
+                ->where('authenticated', 1)
                 ->first();
 
                 $uploadCount = config('app.xray.upload_limit');
 
                 $dateNow = Carbon::today()->setTimezone('UTC');
                 
-                $xrayCount = xrays::select()->where('edited_by', Auth::user()->name)
+                $xrayCount = xrays::where('edited_by', Auth::user()->name)
                 ->whereDate('created_at', $dateNow)
                 ->whereNotNull('output_image')
                 ->count();
 
-                if($dentistAuth && (int) $dentistAuth->authenticated == 1){
+                if($dentistAuth){
 
                     $uploadCount = config('app.xray.premium_limit');
 
