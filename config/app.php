@@ -123,4 +123,19 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | X-ray Upload Limits
+    |--------------------------------------------------------------------------
+    |
+    | These values determine the upload limits for X-ray operations.
+    | Change these values to update limits across the entire application.
+    |
+    */
+
+    'xray' => [
+        'upload_limit' => env('XRAY_UPLOAD_LIMIT', 100),
+        'premium_limit' => env('XRAY_PREMIUM_LIMIT', 9999),
+    ],
+
 ];
