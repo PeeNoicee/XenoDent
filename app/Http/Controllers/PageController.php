@@ -48,14 +48,20 @@ class PageController extends Controller
         $dentistName = Auth::user()->name;
         $listOfUsers = Patient::select()->get();
 
-        $dateNow = Carbon::today('America/New_York');
+        $dateNow = Carbon::today()->setTimezone('UTC');
 
-        $xrayCount = xrays::select()->where('edited_by', Auth::user()->name)
+        $xrayCount = xrays::where('edited_by', Auth::user()->name)
         ->whereDate('created_at', $dateNow)
+        ->whereNotNull('output_image')
         ->count();
 
+        // Get the upload limit based on authentication status
+        $uploadLimit = config('app.xray.upload_limit');
+        if($prem == 1){
+            $uploadLimit = config('app.xray.premium_limit');
+        }
 
-        return view('xrayPage', Compact('prem', 'listOfUsers','dentistName', 'xrayCount'));
+        return view('xrayPage', Compact('prem', 'listOfUsers','dentistName', 'xrayCount', 'uploadLimit'));
     }
 
 
@@ -65,10 +71,10 @@ class PageController extends Controller
         ->where('authenticated', 1)->first();
 
         if(is_null($prem)){   
-            $prem = 0;
+            return 0;
         }
 
-        return $prem;
+        return 1;
     }
 
 
