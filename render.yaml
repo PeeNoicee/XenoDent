@@ -2,17 +2,9 @@ services:
   # Laravel Web Service  
   - type: web
     name: xenodent-web
-    env: node
+    env: docker
     plan: free
-    buildCommand: |
-      curl -sS https://getcomposer.org/installer | php
-      mv composer.phar /usr/local/bin/composer
-      composer install --no-dev --optimize-autoloader
-      npm ci
-      npm run build
-    startCommand: |
-      php artisan migrate --force
-      php -S 0.0.0.0:$PORT -t public
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: APP_ENV
         value: production
@@ -22,6 +14,8 @@ services:
         generateValue: true
       - key: APP_URL
         value: https://xenodent-web.onrender.com
+      - key: PORT
+        value: 80
       - key: LOG_CHANNEL
         value: stderr
       - key: LOG_STDERR_FORMATTER
