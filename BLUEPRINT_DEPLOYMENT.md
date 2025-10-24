@@ -157,10 +157,10 @@ php artisan tinker
 - Configure custom health check endpoints if needed
 
 ## Cost Breakdown
-- **Laravel Service**: $7/month (Starter)
-- **Flask AI Service**: $7/month (Starter)
-- **PostgreSQL Database**: $7/month (Starter)
-- **Total**: $21/month
+- **Laravel Service**: FREE (Free tier)
+- **Flask AI Service**: FREE (Free tier)
+- **PostgreSQL Database**: FREE (Free tier)
+- **Total**: $0/month 🎉
 
 ## Security Best Practices
 1. ✅ API keys in environment variables

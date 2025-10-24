@@ -3,7 +3,7 @@ services:
   - type: web
     name: xenodent-web
     env: node
-    plan: starter
+    plan: free
     buildCommand: |
       curl -sS https://getcomposer.org/installer | php
       mv composer.phar /usr/local/bin/composer
@@ -61,7 +61,7 @@ services:
   - type: web
     name: xenodent-flask
     env: python
-    plan: starter
+    plan: free
     buildCommand: |
       cd flask_backend
       pip install -r requirements.txt
@@ -80,4 +80,4 @@ databases:
   - name: xenodent-db
     databaseName: xenodent
     user: xenodent_user
-    plan: starter
+    plan: free
