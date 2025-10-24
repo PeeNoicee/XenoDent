@@ -4,3 +4,4 @@ opencv-python-headless==4.7.1.72
 numpy==1.21.6
 inference-sdk==0.9.19
 requests==2.31.0 
+python==3.10.12
