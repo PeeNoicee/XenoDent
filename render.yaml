@@ -1,19 +1,18 @@
 services:
-  # Laravel Web Service
+  # Laravel Web Service  
   - type: web
     name: xenodent-web
-    env: php
+    env: node
     plan: starter
     buildCommand: |
+      curl -sS https://getcomposer.org/installer | php
+      mv composer.phar /usr/local/bin/composer
       composer install --no-dev --optimize-autoloader
       npm ci
       npm run build
-      php artisan config:cache
-      php artisan route:cache
-      php artisan view:cache
     startCommand: |
       php artisan migrate --force
-      php artisan serve --host=0.0.0.0 --port=$PORT
+      php -S 0.0.0.0:$PORT -t public
     envVars:
       - key: APP_ENV
         value: production
@@ -22,10 +21,7 @@ services:
       - key: APP_KEY
         generateValue: true
       - key: APP_URL
-        fromService:
-          type: web
-          name: xenodent-web
-          property: url
+        value: https://xenodent-web.onrender.com
       - key: LOG_CHANNEL
         value: stderr
       - key: LOG_STDERR_FORMATTER
@@ -53,10 +49,7 @@ services:
           name: xenodent-db
           property: password
       - key: FLASK_BACKEND_URL
-        fromService:
-          type: web
-          name: xenodent-flask
-          property: url
+        value: https://xenodent-flask.onrender.com
       - key: SESSION_DRIVER
         value: database
       - key: CACHE_DRIVER
