@@ -58,7 +58,6 @@ services:
     plan: free
     buildCommand: |
       cd flask_backend
-      python --version
       pip install --upgrade pip
       pip install -r requirements.txt
     startCommand: |
