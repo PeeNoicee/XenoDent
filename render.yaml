@@ -56,7 +56,6 @@ services:
     name: xenodent-flask
     env: python
     plan: free
-    runtime: python-3.11.9
     buildCommand: |
       cd flask_backend
       pip install --upgrade pip
