@@ -36,7 +36,7 @@ Route::get('/premiumPage', [PageController::class, 'premium'])->name('premiumPag
 Route::match(['get','patch','post'],'/xrayPage', [PageController::class, 'xray'])->name('xray');
 
 //For Xray image API
-Route::match(['get','patch','post'],'/uploadImage', [XrayControl::class, 'upload'])->name('upload');
+Route::match(['get','patch','post'],'/uploadImage', [XrayControl::class, 'upload'])->name('uploadImage');
 Route::match(['get','patch','post'],'/getImages', [XrayControl::class, 'getImages'])->name('getImages');
 
 Route::get('/xray-count', [XrayControl::class, 'getXrayCount'])->name('xray.count');
