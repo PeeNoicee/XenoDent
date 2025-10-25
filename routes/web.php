@@ -49,6 +49,11 @@ Route::patch('/updateUser', [AuthControl::class, 'updateUser'])->name('updateUse
 //Uploading Xray image
 Route::post('/upload', [XrayControl::class, 'upload'])->name('upload');
 
+// TEST ROUTE - remove after debugging
+Route::get('/test-upload', function() {
+    return response()->json(['status' => 'Upload route accessible', 'timestamp' => now()]);
+});
+
 Route::post('/analyze', [XrayControl::class, 'analyze'])->name('analyze');
 
 

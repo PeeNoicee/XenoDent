@@ -283,14 +283,32 @@ document.getElementById('xray-upload-form').addEventListener('submit', function(
             });
         })
         .then(async res => {
+            console.log('Upload response status:', res.status);
+            console.log('Upload response headers:', Object.fromEntries(res.headers.entries()));
+
             if (res.status === 413) {
                 throw new Error('File size too large even after resizing. Please try a smaller image.');
             }
-            const data = await res.json();
+
+            const responseText = await res.text();
+            console.log('Upload response text:', responseText);
+
             if (!res.ok) {
-                throw new Error(data.error || `HTTP error! status: ${res.status}`);
+                let errorMessage = `HTTP error! status: ${res.status}`;
+                try {
+                    const errorData = JSON.parse(responseText);
+                    errorMessage = errorData.error || errorMessage;
+                } catch (e) {
+                    errorMessage = responseText || errorMessage;
+                }
+                throw new Error(errorMessage);
             }
-            return data;
+
+            try {
+                return JSON.parse(responseText);
+            } catch (e) {
+                throw new Error('Invalid JSON response: ' + responseText);
+            }
         })
         .then(data => {
             console.log('Upload response:', data); // Debug log

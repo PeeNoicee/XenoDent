@@ -48,13 +48,23 @@ class XrayControl extends Controller
     //
     public function upload(Request $request){
 
+        Log::info('=== UPLOAD REQUEST STARTED ===', [
+            'timestamp' => now(),
+            'method' => $request->method(),
+            'url' => $request->fullUrl(),
+            'user_agent' => $request->userAgent(),
+            'ip' => $request->ip(),
+            'session_id' => $request->session()->getId(),
+        ]);
+
         try {
             Log::info('Upload request received', [
                 'hasFile' => $request->hasFile('image'),
                 'allFiles' => $request->allFiles(),
                 'allInput' => $request->all(),
                 'method' => $request->method(),
-                'headers' => $request->headers->all()
+                'headers' => $request->headers->all(),
+                'content_type' => $request->header('Content-Type'),
             ]);
 
             // Check if request has valid CSRF token
@@ -62,6 +72,9 @@ class XrayControl extends Controller
                 Log::error('No CSRF token in request');
                 return response()->json(['error' => 'CSRF token missing'], 403);
             }
+
+            $csrfToken = $request->input('_token');
+            Log::info('CSRF token received', ['token_length' => strlen($csrfToken)]);
 
             if (!$request->hasFile('image')) {
                 Log::error('No file uploaded');
