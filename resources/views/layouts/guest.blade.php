@@ -15,8 +15,46 @@
         @if(app()->environment('local'))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @else
-            <link rel="stylesheet" href="{{ asset('build/assets/app-BAvZYwTm.css') }}">
-            <script src="{{ asset('build/assets/app-B6wC0KJE.js') }}" defer></script>
+            @php
+                $manifestPath = public_path('build/manifest.json');
+                $cssFile = null;
+                $jsFile = null;
+
+                // Try to read from manifest first
+                if (file_exists($manifestPath)) {
+                    $manifest = json_decode(file_get_contents($manifestPath), true);
+                    if (isset($manifest['resources/css/app.css']['file'])) {
+                        $cssFile = 'build/' . $manifest['resources/css/app.css']['file'];
+                    }
+                    if (isset($manifest['resources/js/app.js']['file'])) {
+                        $jsFile = 'build/' . $manifest['resources/js/app.js']['file'];
+                    }
+                }
+
+                // Fallback: scan build directory for CSS and JS files
+                if (!$cssFile || !$jsFile) {
+                    $buildDir = public_path('build/assets');
+                    if (is_dir($buildDir)) {
+                        $files = scandir($buildDir);
+                        foreach ($files as $file) {
+                            if (!$cssFile && pathinfo($file, PATHINFO_EXTENSION) === 'css') {
+                                $cssFile = 'build/assets/' . $file;
+                            }
+                            if (!$jsFile && pathinfo($file, PATHINFO_EXTENSION) === 'js') {
+                                $jsFile = 'build/assets/' . $file;
+                            }
+                        }
+                    }
+                }
+            @endphp
+
+            @if($cssFile)
+                <link rel="stylesheet" href="{{ asset($cssFile) }}">
+            @endif
+
+            @if($jsFile)
+                <script src="{{ asset($jsFile) }}" defer></script>
+            @endif
         @endif
     </head>
     <body class="font-sans text-gray-900 antialiased">
