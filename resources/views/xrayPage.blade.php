@@ -287,13 +287,13 @@ document.getElementById('xray-upload-form').addEventListener('submit', function(
             newFormData.append('patient_name', patientName);
             newFormData.append('patient_id', patientId);
 
-            console.log('About to make fetch request to:', "{{ route('upload') }}");
+            console.log('About to make fetch request to:', "{{ secure_url(route('upload')) }}");
             console.log('FormData contents:');
             for (let [key, value] of newFormData.entries()) {
                 console.log(key, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
             }
 
-            return fetch("{{ route('upload') }}", {
+            return fetch("{{ secure_url(route('upload')) }}", {
                 method: 'POST',
                 body: newFormData
             });
@@ -391,7 +391,7 @@ document.getElementById('xray-upload-form').addEventListener('submit', function(
 
 //Update count
 function updateXrayCount() {
-    fetch("{{ route('xray.count') }}", {
+    fetch("{{ secure_url(route('xray.count')) }}", {
         method: 'GET',
         headers: {
             'Accept': 'application/json'
@@ -674,7 +674,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const imageId = imageIdElement.value;
 
-            fetch("{{ route('analyze') }}", {
+            fetch("{{ secure_url(route('analyze')) }}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
