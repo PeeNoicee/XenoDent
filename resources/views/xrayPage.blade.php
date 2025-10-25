@@ -182,31 +182,41 @@ document.addEventListener('DOMContentLoaded', function () {
 //PREVIEW IMAGE
 document.getElementById('xray-upload-form').addEventListener('submit', function(e) {
     e.preventDefault();
+    console.log('Form submit event triggered');
 
     const form = e.target;
     const formData = new FormData(form);
     const fileInput = form.querySelector('#image-input');
     const patientId = document.getElementById('patientId').value;
     
+    console.log('Patient ID:', patientId);
+    console.log('File input found:', !!fileInput);
+    console.log('File input files:', fileInput ? fileInput.files : 'no file input');
+    
     // Check if patient is selected
     if (!patientId) {
+        console.log('Patient not selected - showing alert');
         alert('Please select a patient before uploading');
         return;
     }
     
     if (!fileInput.files.length) {
+        console.log('No file selected - showing alert');
         alert('Please select a file to upload');
         return;
     }
 
     const file = fileInput.files[0];
+    console.log('Selected file:', file.name, file.type, file.size);
     
     if (!file.type.startsWith('image/')) {
+        console.log('File is not an image - showing alert');
         alert('Please select an image file');
         return;
     }
 
     const submitButton = form.querySelector('.btn-primary');
+    console.log('Submit button found:', !!submitButton);
     if (!submitButton) {
         console.error('Submit button not found');
         return;
@@ -276,6 +286,12 @@ document.getElementById('xray-upload-form').addEventListener('submit', function(
             newFormData.append('dentist_name',dentistName);
             newFormData.append('patient_name', patientName);
             newFormData.append('patient_id', patientId);
+
+            console.log('About to make fetch request to:', "{{ route('upload') }}");
+            console.log('FormData contents:');
+            for (let [key, value] of newFormData.entries()) {
+                console.log(key, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
+            }
 
             return fetch("{{ route('upload') }}", {
                 method: 'POST',
