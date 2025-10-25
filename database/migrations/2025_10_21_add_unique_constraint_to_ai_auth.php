@@ -15,10 +15,12 @@ return new class extends Migration
         Schema::table('ai_auth', function (Blueprint $table) {
             // First, remove any duplicate records (keep the latest one for each user_id)
             DB::statement('
-                DELETE a1 FROM ai_auth a1
-                INNER JOIN ai_auth a2 
-                WHERE a1.id < a2.id 
-                AND a1.user_id = a2.user_id
+                DELETE FROM ai_auth a1
+                WHERE EXISTS (
+                    SELECT 1 FROM ai_auth a2
+                    WHERE a1.user_id = a2.user_id
+                    AND a1.id < a2.id
+                )
             ');
             
             // Add unique constraint to user_id

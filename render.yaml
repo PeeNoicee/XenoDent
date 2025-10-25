@@ -12,7 +12,7 @@ services:
       - key: APP_DEBUG
         value: false
       - key: APP_KEY
-        generateValue: true
+        value: base64:c3VwZXJzZWNyZXRrZXl0aGF0aXMzMnRoYXJhY3RlcnM=
       - key: APP_URL
         value: https://xenodent-web.onrender.com
       - key: PORT
