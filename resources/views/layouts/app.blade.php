@@ -66,14 +66,12 @@
                 $debug['final_js'] = $jsFile;
             @endphp
 
-            <!-- Debug: {{ json_encode($debug) }} -->
-
             @if($cssFile)
-                <link rel="stylesheet" href="{{ asset($cssFile) }}">
+                <link rel="stylesheet" href="{{ secure_asset($cssFile) }}">
             @endif
 
             @if($jsFile)
-                <script src="{{ asset($jsFile) }}" defer></script>
+                <script src="{{ secure_asset($jsFile) }}" defer></script>
             @endif
         @endif
 
