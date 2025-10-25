@@ -47,14 +47,14 @@ class XrayControl extends Controller
 
     //
     public function upload(Request $request){
-
-        Log::info('=== UPLOAD REQUEST STARTED ===', [
+        // DEBUG: Log that method was called
+        Log::info('=== UPLOAD METHOD CALLED ===', [
             'timestamp' => now(),
             'method' => $request->method(),
             'url' => $request->fullUrl(),
-            'user_agent' => $request->userAgent(),
-            'ip' => $request->ip(),
-            'session_id' => $request->session()->getId(),
+            'is_ajax' => $request->ajax(),
+            'is_json' => $request->isJson(),
+            'content_type' => $request->header('Content-Type'),
         ]);
 
         try {

@@ -48,10 +48,11 @@ Route::patch('/updateUser', [AuthControl::class, 'updateUser'])->name('updateUse
 
 // Upload routes - need web middleware for CSRF protection
 Route::middleware(['web'])->group(function () {
-    //Uploading Xray image
-    Route::post('/upload', [XrayControl::class, 'upload'])->name('upload');
     Route::post('/analyze', [XrayControl::class, 'analyze'])->name('analyze');
 });
+
+//Uploading Xray image - temporarily outside middleware to debug 405 error
+Route::post('/upload', [XrayControl::class, 'upload'])->name('upload');
 Route::get('/patientManagement', [PatientController::class, 'displayPatientManagement'])->name('patientManagement');
 Route::get('/patientManagement/create', [PatientController::class, 'create'])->name('addPatient');
 Route::post('/patientManagement', [PatientController::class, 'store'])->name('storePatient');
