@@ -29,7 +29,7 @@ color_map = {
 
 @app.route('/')
 def index():
-    return render_template('index.html')  # This renders the HTML page
+    return {"message": "XenoDent AI Flask Service", "status": "running", "endpoints": ["/predict"]}  # API response instead of template
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -141,4 +141,8 @@ def predict():
         }), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='127.0.0.1', port=5000)
+    import os
+    port = int(os.environ.get('PORT', 5000))
+    debug = os.environ.get('FLASK_ENV') != 'production'
+    print(f"Starting Flask app on 0.0.0.0:{port}")
+    app.run(debug=debug, host='0.0.0.0', port=port)
