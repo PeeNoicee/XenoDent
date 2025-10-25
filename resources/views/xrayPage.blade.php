@@ -279,9 +279,6 @@ document.getElementById('xray-upload-form').addEventListener('submit', function(
 
             return fetch("{{ route('upload') }}", {
                 method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
                 body: newFormData
             });
         })
