@@ -360,10 +360,15 @@ function updateXrayCount() {
     fetch("{{ route('xray.count') }}", {
         method: 'GET',
         headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            'Accept': 'application/json'
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         // Update count
         const countDiv = document.getElementById('xray-count-text');
@@ -377,7 +382,10 @@ function updateXrayCount() {
             limitDiv.textContent = data.limit;
         }
     })
-    .catch(error => console.error('Error fetching xray count:', error));
+    .catch(error => {
+        console.error('Error fetching xray count:', error);
+        // Don't show alert to user, just log the error
+    });
 }
 
 // Force immediate update (useful after operations)
