@@ -20,26 +20,15 @@
                 $manifestPath = public_path('build/manifest.json');
                 $cssFile = null;
                 $jsFile = null;
-                $debug = [];
-
-                // Debug: Check what files exist
-                $debug['manifest_exists'] = file_exists($manifestPath);
-                $debug['build_dir_exists'] = is_dir(public_path('build'));
-                $debug['assets_dir_exists'] = is_dir(public_path('build/assets'));
 
                 // Try to read from manifest first
                 if (file_exists($manifestPath)) {
                     $manifest = json_decode(file_get_contents($manifestPath), true);
-                    $debug['manifest_keys'] = array_keys($manifest);
                     if (isset($manifest['resources/css/app.css']['file'])) {
                         $cssFile = 'build/' . $manifest['resources/css/app.css']['file'];
-                        $debug['css_from_manifest'] = $cssFile;
-                        $debug['css_file_exists'] = file_exists(public_path($cssFile));
                     }
                     if (isset($manifest['resources/js/app.js']['file'])) {
                         $jsFile = 'build/' . $manifest['resources/js/app.js']['file'];
-                        $debug['js_from_manifest'] = $jsFile;
-                        $debug['js_file_exists'] = file_exists(public_path($jsFile));
                     }
                 }
 
@@ -48,22 +37,16 @@
                     $buildDir = public_path('build/assets');
                     if (is_dir($buildDir)) {
                         $files = array_diff(scandir($buildDir), ['.', '..']);
-                        $debug['found_files'] = $files;
                         foreach ($files as $file) {
                             if (!$cssFile && pathinfo($file, PATHINFO_EXTENSION) === 'css') {
                                 $cssFile = 'build/assets/' . $file;
-                                $debug['css_from_scan'] = $cssFile;
                             }
                             if (!$jsFile && pathinfo($file, PATHINFO_EXTENSION) === 'js') {
                                 $jsFile = 'build/assets/' . $file;
-                                $debug['js_from_scan'] = $jsFile;
                             }
                         }
                     }
                 }
-
-                $debug['final_css'] = $cssFile;
-                $debug['final_js'] = $jsFile;
             @endphp
 
             @if($cssFile)
