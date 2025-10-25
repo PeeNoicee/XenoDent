@@ -29,7 +29,12 @@
             color: #F9FAFB;
         }
     </style>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @if(app()->environment('local'))
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @else
+        <link rel="stylesheet" href="{{ asset('build/assets/app-BAvZYwTm.css') }}">
+        <script src="{{ asset('build/assets/app-B6wC0KJE.js') }}" defer></script>
+    @endif
 </head>
 
 <body class="min-h-screen flex flex-col">
