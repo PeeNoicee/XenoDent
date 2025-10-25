@@ -54,7 +54,7 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-av
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
 # Create startup script
-RUN echo '#!/bin/bash\nphp artisan migrate --force\napache2-foreground' > /usr/local/bin/start.sh \
+RUN echo '#!/bin/bash\necho "Database connection info:"\necho "DB_HOST: $DB_HOST"\necho "DB_PORT: $DB_PORT"\necho "DB_DATABASE: $DB_DATABASE"\necho "DB_CONNECTION: $DB_CONNECTION"\necho "Waiting for database to be ready..."\nfor i in {1..30}; do\n  if php artisan tinker --execute="DB::connection()->getPdo(); echo \"Database connected successfully\";" 2>/dev/null; then\n    echo "Database is ready!"\n    break\n  fi\n  echo "Waiting for database... ($i/30)"\n  sleep 2\ndone\nphp artisan migrate --force\napache2-foreground' > /usr/local/bin/start.sh \
     && chmod +x /usr/local/bin/start.sh
 
 # Expose port
