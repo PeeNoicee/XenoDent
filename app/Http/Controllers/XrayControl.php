@@ -150,7 +150,9 @@ class XrayControl extends Controller
                     'storage_path' => $path,
                     'original_name' => $originalName,
                     'image_id' => $xray->id
-                ]);
+                ])->header('Access-Control-Allow-Origin', '*')
+                  ->header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+                  ->header('Access-Control-Allow-Headers', 'Content-Type, X-CSRF-TOKEN, Authorization');
             } catch (\Exception $e) {
                 Log::error('Upload failed', [
                     'error' => $e->getMessage(),
