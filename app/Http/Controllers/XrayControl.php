@@ -48,23 +48,30 @@ class XrayControl extends Controller
     //
     public function upload(Request $request){
 
-        $patientID = $request->input('patient_id');
+        try {
+            Log::info('Upload request received', [
+                'hasFile' => $request->hasFile('image'),
+                'allFiles' => $request->allFiles(),
+                'allInput' => $request->all(),
+                'method' => $request->method(),
+                'headers' => $request->headers->all()
+            ]);
 
-            try {
-                Log::info('Upload request received', [
-                    'hasFile' => $request->hasFile('image'),
-                    'allFiles' => $request->allFiles(),
-                    'allInput' => $request->all()
-                ]);
+            // Check if request has valid CSRF token
+            if (!$request->has('_token')) {
+                Log::error('No CSRF token in request');
+                return response()->json(['error' => 'CSRF token missing'], 403);
+            }
 
-                if (!$request->hasFile('image')) {
-                    Log::error('No file uploaded');
-                    return response()->json(['error' => 'No file uploaded'], 400);
-                }
+            if (!$request->hasFile('image')) {
+                Log::error('No file uploaded');
+                return response()->json(['error' => 'No file uploaded'], 400);
+            }
             
-                $file = $request->file('image');
-                $dentistName = $request->input('dentist_name');
-                $patientName = $request->input('patient_name');
+            $patientID = $request->input('patient_id');
+            $file = $request->file('image');
+            $dentistName = $request->input('dentist_name');
+            $patientName = $request->input('patient_name');
                 
                 // Validate file type
                 if (!$file->isValid()) {
@@ -83,10 +90,23 @@ class XrayControl extends Controller
                     return response()->json(['error' => 'File must be an image'], 400);
                 }
 
+                // Check storage directory
+                $storagePath = storage_path('app/public/xray_images');
+                if (!file_exists($storagePath)) {
+                    Log::info('Creating xray_images directory', ['path' => $storagePath]);
+                    mkdir($storagePath, 0755, true);
+                }
+
+                if (!is_writable($storagePath)) {
+                    Log::error('Storage directory not writable', ['path' => $storagePath]);
+                    return response()->json(['error' => 'Storage directory not writable'], 500);
+                }
+
                 $originalName = $file->getClientOriginalName();
                 Log::info('Storing file', [
                     'originalName' => $originalName,
-                    'mime' => $file->getMimeType()
+                    'mime' => $file->getMimeType(),
+                    'storagePath' => $storagePath
                 ]);
 
                 $path = $file->storeAs('xray_images', $originalName, 'public');
