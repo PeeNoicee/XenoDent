@@ -21,12 +21,20 @@ CLIENT = InferenceHTTPClient(
 # Initialize Tooth Position Mapper
 tooth_mapper = ToothPositionMapper()
 
-# Define a color map for different classes
+# Define a color map for different classes (COCO model)
 color_map = {
-    "periapical lesion": (128, 0, 128),
-    "impacted": (0, 255, 0),
-    "caries": (64, 224, 208),
-    "deep caries": (0, 36, 238)
+    "person": (255, 0, 0),
+    "car": (0, 255, 0),
+    "dog": (0, 0, 255),
+    "cat": (255, 255, 0),
+    "bird": (255, 0, 255),
+    "horse": (0, 255, 255),
+    "sheep": (128, 128, 128),
+    "cow": (128, 0, 128),
+    "elephant": (128, 128, 0),
+    "bear": (0, 128, 128),
+    "zebra": (192, 192, 192),
+    "giraffe": (128, 128, 64)
 }
 
 @app.route('/')
@@ -52,7 +60,8 @@ def predict():
         # Run inference using the base64-encoded image
         try:
             img_base64 = base64.b64encode(cv2.imencode('.png', image)[1]).decode('utf-8')
-            result = CLIENT.infer(img_base64, model_id="xenodent_panoramic/6")
+            # Temporarily use public model for testing
+            result = CLIENT.infer(img_base64, model_id="coco/1")
         except Exception as api_error:
             print(f"Roboflow API Error: {str(api_error)}", file=sys.stderr)
             return jsonify({
@@ -88,19 +97,15 @@ def predict():
             enhanced_pred = enhanced_predictions[i] if i < len(enhanced_predictions) else None
             
             if enhanced_pred and enhanced_pred.get('dental_location'):
-                # Create dental position label
+                # Dental position label (if using dental model)
                 tooth_num = enhanced_pred['dental_location']['tooth_number']
                 quadrant = enhanced_pred['dental_location']['quadrant']
                 class_name = enhanced_pred['class'].title()
-                
-                # Format: "Q: 1 N: 6 D: Caries" (Quadrant: 1, Number: 6, Diagnosis: Caries)
-                q_num = enhanced_pred['dental_location']['quadrant_number'] if 'quadrant_number' in enhanced_pred['dental_location'] else str(tooth_num)[0]
-                tooth_pos = str(tooth_num)[1] if len(str(tooth_num)) > 1 else str(tooth_num)
-                
-                label = f"Q: {q_num} N: {tooth_pos} D: {class_name}"
+                label = f"Q: {quadrant[0]} N: {tooth_num % 10} D: {class_name}"
             else:
-                # Fallback to confidence percentage
-                label = f"{conf * 100:.0f}%"
+                # General object detection label
+                class_name = pred["class"].title()
+                label = f"{class_name}: {conf * 100:.0f}%"
             
             # Calculate label dimensions and position
             font_scale, thickness = 0.7, 2
@@ -140,8 +145,9 @@ def predict():
         return jsonify({
             "success": True,
             "image": img_base64,
-            "predictions": enhanced_predictions,
-            "raw_predictions": filtered_predictions  # Keep original for debugging
+            "predictions": filtered_predictions,  # Use filtered predictions directly
+            "model_used": "coco/1",  # Indicate which model was used
+            "note": "Using COCO object detection model for testing"
         })
 
     except Exception as e:
