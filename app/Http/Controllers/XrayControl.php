@@ -292,14 +292,17 @@ class XrayControl extends Controller
         public function analyze(Request $request)
         {
 
-                $authUser = Auth::user()->authUser;
+                $authUser = Auth::user() ? Auth::user()->authUser : null;
                 $dentistAuth = $authUser && $authUser->authenticated === 1;
 
                 $uploadCount = config('app.xray.upload_limit');
 
                 $dateNow = Carbon::today()->setTimezone('UTC');
                 
-                $xrayCount = xrays::where('edited_by', Auth::user()->name)
+                // Use authenticated user name if available, otherwise use a default
+                $userName = Auth::user() ? Auth::user()->name : 'guest';
+                
+                $xrayCount = xrays::where('edited_by', $userName)
                 ->whereDate('created_at', $dateNow)
                 ->whereNotNull('output_image')
                 ->count();
