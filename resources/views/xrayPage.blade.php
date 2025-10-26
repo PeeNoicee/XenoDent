@@ -482,7 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const imagePath = img.src.split('/').pop();
 
-            fetch("{{ route('analyze') }}", {
+            fetch("/analyze", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -578,7 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const imageId = imageIdElement.value;
 
-            fetch("{{ route('analyze') }}", {
+            fetch("/analyze", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -674,7 +674,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const imageId = imageIdElement.value;
 
-            fetch("{{ route('analyze') }}", {
+            fetch("/analyze", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
