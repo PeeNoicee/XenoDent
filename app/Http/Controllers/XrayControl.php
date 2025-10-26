@@ -137,7 +137,7 @@ class XrayControl extends Controller
                 ]);
 
                 // Generate the correct URL for the stored file
-                $url = asset('storage/' . $path);
+                $url = secure_asset('storage/' . $path);
                 
                 Log::info('File uploaded successfully', [
                     'path' => $path,
