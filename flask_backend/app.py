@@ -5,6 +5,7 @@ import base64
 import numpy as np
 from flask_cors import CORS
 from tooth_mapper import ToothPositionMapper
+import sys
 
 # XenoDent AI Flask Service - Updated with better error handling
 
