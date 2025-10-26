@@ -19,7 +19,7 @@ CLIENT = InferenceHTTPClient(
 
 @app.route('/')
 def index():
-    return {"message": "XenoDent AI Flask Service", "status": "running"}
+    return {"message": "XenoDent AI Flask Service - Updated with Roboflow API calls (forced redeploy)", "status": "running"}
 
 @app.route('/predict', methods=['POST', 'OPTIONS'])
 def predict():
