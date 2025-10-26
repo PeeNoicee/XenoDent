@@ -1,10 +1,8 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
 
-# XenoDent AI Flask Service - Ultra minimal test
+# XenoDent AI Flask Service - Minimal test without CORS
 
 app = Flask(__name__)
-CORS(app)
 
 @app.route('/')
 def index():
