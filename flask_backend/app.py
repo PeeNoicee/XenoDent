@@ -14,8 +14,8 @@ def index():
 def predict():
     return jsonify({
         "success": True,
-        "message": "Ultra minimal Flask test working!",
-        "received_data": bool(request.json)
+        "message": "Flask service is working!",
+        "received_data": request.method == "POST"
     })
 
 if __name__ == '__main__':
