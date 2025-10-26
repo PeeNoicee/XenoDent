@@ -48,7 +48,7 @@ services:
           name: xenodent-db
           property: connectionString
       - key: FLASK_BACKEND_URL
-        value: https://xenodent-flask.onrender.com
+        value: https://xenodent-flask.onrender.com/predict
       - key: SESSION_DRIVER
         value: database
       - key: CACHE_DRIVER
