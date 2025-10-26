@@ -11,10 +11,10 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     libpq-dev \
-    python3 \
-    python3-pip \
-    python3-dev \
-    python3-venv \
+    python3.10 \
+    python3.10-pip \
+    python3.10-dev \
+    python3.10-venv \
     && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get install -y nodejs
 
@@ -43,7 +43,7 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction
 RUN npm ci && npm run build
 
 # Create Python virtual environment and install dependencies for AI analysis
-RUN python3 -m venv /opt/venv && \
+RUN python3.10 -m venv /opt/venv && \
     /opt/venv/bin/pip install --upgrade pip && \
     /opt/venv/bin/pip install opencv-python-headless==4.7.0.72 numpy==1.21.6 requests==2.31.0 pillow
 
