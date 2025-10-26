@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import base64
-import numpy as np
-import cv2
+from PIL import Image
+import io
 
 app = Flask(__name__)
 
@@ -29,17 +29,14 @@ def predict():
         # Base64 decode and process image
         try:
             img_data = base64.b64decode(request.json['image'])
-            np_arr = np.frombuffer(img_data, np.uint8)
-            image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+            image = Image.open(io.BytesIO(img_data))
             
-            if image is None:
-                return jsonify({"success": False, "error": "Invalid image data"}), 400
-                
             return jsonify({
                 "success": True,
-                "message": "Image processed successfully",
-                "dimensions": {"height": int(image.shape[0]), "width": int(image.shape[1])},
-                "channels": int(image.shape[2]) if len(image.shape) > 2 else 1
+                "message": "Image processed successfully with PIL",
+                "dimensions": {"width": image.width, "height": image.height},
+                "format": image.format,
+                "mode": image.mode
             })
             
         except Exception as img_error:
