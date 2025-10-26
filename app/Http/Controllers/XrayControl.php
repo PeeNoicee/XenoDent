@@ -400,7 +400,7 @@ class XrayControl extends Controller
                         return response()->json([
                             'success' => true,
                             'message' => 'Analysis successful',
-                            'output_file' => asset('xrayOutputs/' . $outputFileName),
+                            'output_file' => secure_asset('xrayOutputs/' . $outputFileName),
                             'result' => $result,
                             'flask_analysis' => $result['flask_analysis'], // Includes the Base64 image
                             'patient_info' => $patientInfo

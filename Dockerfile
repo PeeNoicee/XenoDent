@@ -60,6 +60,8 @@ echo "DB_HOST: $DB_HOST"\n\
 echo "DB_PORT: $DB_PORT"\n\
 echo "DB_DATABASE: $DB_DATABASE"\n\
 echo "DB_CONNECTION: $DB_CONNECTION"\n\
+echo "Creating storage symlink..."\n\
+php artisan storage:link\n\
 echo "Caching Laravel configuration..."\n\
 php artisan config:cache\n\
 php artisan route:cache\n\
