@@ -21,14 +21,20 @@ CLIENT = InferenceHTTPClient(
 # Initialize Tooth Position Mapper
 tooth_mapper = ToothPositionMapper()
 
-# Define a color map for dental classes
+# Define a color map for different classes (temporary COCO model for testing)
 color_map = {
-    "periapical lesion": (128, 0, 128),  # Purple
-    "impacted": (0, 255, 0),           # Green
-    "caries": (64, 224, 208),          # Turquoise
-    "deep caries": (0, 36, 238),       # Blue
-    "tooth": (255, 255, 0),            # Yellow
-    "normal": (192, 192, 192)          # Gray
+    "person": (255, 0, 0),     # Red
+    "car": (0, 255, 0),        # Green
+    "dog": (0, 0, 255),        # Blue
+    "cat": (255, 255, 0),      # Yellow
+    "bird": (255, 0, 255),     # Magenta
+    "horse": (0, 255, 255),    # Cyan
+    "sheep": (128, 128, 128),  # Gray
+    "cow": (128, 0, 128),      # Purple
+    "elephant": (128, 128, 0), # Olive
+    "bear": (0, 128, 128),     # Teal
+    "zebra": (192, 192, 192),  # Silver
+    "giraffe": (128, 128, 64)  # Dark Olive
 }
 
 @app.route('/')
@@ -54,7 +60,7 @@ def predict():
         # Run inference using the base64-encoded image
         try:
             img_base64 = base64.b64encode(cv2.imencode('.png', image)[1]).decode('utf-8')
-            result = CLIENT.infer(img_base64, model_id="xenodent_panoramic/6")
+            result = CLIENT.infer(img_base64, model_id="coco/1")  # Temporarily use public model to test API
         except Exception as api_error:
             print(f"Roboflow API Error: {str(api_error)}", file=sys.stderr)
             return jsonify({
@@ -143,8 +149,8 @@ def predict():
             "image": img_base64,
             "predictions": enhanced_predictions,
             "raw_predictions": filtered_predictions,  # Keep original for debugging
-            "model_used": "xenodent_panoramic/6",
-            "note": "Using dental AI model with position mapping"
+            "model_used": "coco/1",
+            "note": "TEMPORARY: Using COCO model to test API - will switch to dental model once API access is resolved"
         })
 
     except Exception as e:
