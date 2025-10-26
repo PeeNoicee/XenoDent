@@ -22,47 +22,84 @@ class XrayAnalysisService
                 throw new \Exception('Image file not found');
             }
 
-            if (!file_exists($this->pythonScript)) {
-                throw new \Exception('Python script not found');
-            }
+            // Read the image file and encode to base64
+            $imageData = base64_encode(file_get_contents($imagePath));
 
-            // Build the command
-            $command = sprintf(
-                '%s %s %s',
-                escapeshellcmd($this->pythonPath),
-                escapeshellarg($this->pythonScript),
-                escapeshellarg($imagePath)
-            );
+            // Flask API endpoint
+            $flaskUrl = env('FLASK_API_URL', 'https://xenodent-flask.onrender.com/predict');
 
-            // Execute the command
-            $output = [];
-            $returnVar = 0;
-            exec($command, $output, $returnVar);
+            // Prepare the request data
+            $postData = json_encode([
+                'image' => $imageData
+            ]);
 
-            if ($returnVar !== 0) {
-                Log::error('Python script execution failed', [
-                    'command' => $command,
-                    'output' => $output,
-                    'returnVar' => $returnVar
+            // Initialize cURL
+            $ch = curl_init($flaskUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json',
+                'Accept: application/json'
+            ]);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 60); // 60 seconds timeout
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // For development - remove in production
+
+            // Execute the request
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $curlError = curl_error($ch);
+
+            curl_close($ch);
+
+            if ($curlError) {
+                Log::error('Flask API connection error', [
+                    'error' => $curlError,
+                    'url' => $flaskUrl
                 ]);
-                throw new \Exception('Python script execution failed');
+                throw new \Exception('Unable to connect to Flask API: ' . $curlError);
             }
 
-            // Parse the JSON output
-            $result = json_decode(implode("\n", $output), true);
+            if ($httpCode !== 200) {
+                Log::error('Flask API returned error', [
+                    'http_code' => $httpCode,
+                    'response' => $response,
+                    'url' => $flaskUrl
+                ]);
+                // Return a result that indicates API error
+                return [
+                    'api_error' => true,
+                    'error_message' => 'Flask API returned HTTP ' . $httpCode,
+                    'response' => $response
+                ];
+            }
+
+            // Parse the JSON response
+            $result = json_decode($response, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new \Exception('Invalid JSON output from Python script');
+                Log::error('Invalid JSON response from Flask API', [
+                    'response' => $response,
+                    'json_error' => json_last_error_msg()
+                ]);
+                throw new \Exception('Invalid JSON response from Flask API');
             }
 
-            // Note: Tooth position mapping is now handled in the Flask backend
-            // No additional processing needed here as Flask already returns enhanced predictions
+            // Check if Flask API returned an error
+            if (isset($result['success']) && $result['success'] === false) {
+                return [
+                    'api_error' => true,
+                    'error_message' => $result['error'] ?? 'Flask API returned error',
+                    'api_error_details' => $result['api_error_details'] ?? null
+                ];
+            }
 
             return $result;
 
         } catch (\Exception $e) {
             Log::error('X-ray analysis failed', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
+                'image_path' => $imagePath
             ]);
             throw $e;
         }
