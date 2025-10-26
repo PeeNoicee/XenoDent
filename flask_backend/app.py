@@ -6,6 +6,8 @@ import numpy as np
 from flask_cors import CORS
 from tooth_mapper import ToothPositionMapper
 
+# XenoDent AI Flask Service - Updated with better error handling
+
 app = Flask(__name__)
 CORS(app)  # Enable CORS for cross-origin requests
 
