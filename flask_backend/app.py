@@ -15,7 +15,7 @@ CORS(app)  # Enable CORS for cross-origin requests
 import os
 CLIENT = InferenceHTTPClient(
     api_url="https://serverless.roboflow.com",
-    api_key=os.environ.get("ROBOFLOW_API_KEY", "E6WARDv3iZ4kV75PfaR5")
+    api_key="e43qHtrojjqzsab0tgkz"
 )
 
 # Initialize Tooth Position Mapper
