@@ -48,8 +48,16 @@ def predict():
             return jsonify({"error": "Invalid image data"}), 400
 
         # Run inference using the base64-encoded image
-        img_base64 = base64.b64encode(cv2.imencode('.png', image)[1]).decode('utf-8')
-        result = CLIENT.infer(img_base64, model_id="xenodent_panoramic/6")
+        try:
+            img_base64 = base64.b64encode(cv2.imencode('.png', image)[1]).decode('utf-8')
+            result = CLIENT.infer(img_base64, model_id="xenodent_panoramic/6")
+        except Exception as api_error:
+            print(f"Roboflow API Error: {str(api_error)}", file=sys.stderr)
+            return jsonify({
+                "success": False,
+                "error": f"AI model inference failed: {str(api_error)}",
+                "api_error_details": str(api_error)
+            }), 500
 
         if "predictions" not in result:
             return jsonify({"error": "No predictions found"}), 400
