@@ -75,7 +75,7 @@ services:
       - key: PORT
         value: 5000
       - key: ROBOFLOW_API_KEY
-        value: E6WARDv3iZ4kV75PfaR5
+        value: e43qHtrojjqzsab0tgkz
 
 databases:
   - name: xenodent-db

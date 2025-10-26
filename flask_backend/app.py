@@ -15,26 +15,26 @@ CORS(app)  # Enable CORS for cross-origin requests
 import os
 CLIENT = InferenceHTTPClient(
     api_url="https://serverless.roboflow.com",
-    api_key=os.environ.get("ROBOFLOW_API_KEY", "E6WARDv3iZ4kV75PfaR5")
+    api_key="e43qHtrojjqzsab0tgkz"
 )
 
 # Initialize Tooth Position Mapper
 tooth_mapper = ToothPositionMapper()
 
-# Define a color map for different classes (temporary COCO model for testing)
+# Define a color map for dental classes
 color_map = {
-    "person": (255, 0, 0),     # Red
-    "car": (0, 255, 0),        # Green
-    "dog": (0, 0, 255),        # Blue
-    "cat": (255, 255, 0),      # Yellow
-    "bird": (255, 0, 255),     # Magenta
-    "horse": (0, 255, 255),    # Cyan
-    "sheep": (128, 128, 128),  # Gray
-    "cow": (128, 0, 128),      # Purple
-    "elephant": (128, 128, 0), # Olive
-    "bear": (0, 128, 128),     # Teal
-    "zebra": (192, 192, 192),  # Silver
-    "giraffe": (128, 128, 64)  # Dark Olive
+    "periapical lesion": (128, 0, 128),  # Purple
+    "impacted": (0, 255, 0),           # Green
+    "caries": (64, 224, 208),          # Turquoise
+    "deep caries": (0, 36, 238),       # Blue
+    "tooth": (255, 255, 0),            # Yellow
+    "normal": (192, 192, 192),         # Gray
+    "crown": (255, 165, 0),            # Orange
+    "filling": (255, 192, 203),        # Pink
+    "root canal": (139, 69, 19),       # Brown
+    "bridge": (0, 206, 209),           # Dark Turquoise
+    "implant": (255, 0, 255),          # Magenta
+    "denture": (105, 105, 105)         # Dim Gray
 }
 
 @app.route('/')
@@ -60,7 +60,7 @@ def predict():
         # Run inference using the base64-encoded image
         try:
             img_base64 = base64.b64encode(cv2.imencode('.png', image)[1]).decode('utf-8')
-            result = CLIENT.infer(img_base64, model_id="coco/1")  # Temporarily use public model to test API
+            result = CLIENT.infer(img_base64, model_id="xenodent-snjmc/18")  # Use the dental model
         except Exception as api_error:
             print(f"Roboflow API Error: {str(api_error)}", file=sys.stderr)
             return jsonify({
@@ -149,8 +149,8 @@ def predict():
             "image": img_base64,
             "predictions": enhanced_predictions,
             "raw_predictions": filtered_predictions,  # Keep original for debugging
-            "model_used": "coco/1",
-            "note": "TEMPORARY: Using COCO model to test API - will switch to dental model once API access is resolved"
+            "model_used": "xenodent-snjmc/18",
+            "note": "Using real dental AI model with position mapping"
         })
 
     except Exception as e:
