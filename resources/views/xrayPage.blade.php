@@ -149,8 +149,8 @@
 
 <script>
 
-
-
+// Define global variables using Blade
+window.isPremium = 0; // Temporarily hardcoded - will be replaced with proper Blade variable
 
 //UPLOAD IMAGES
 document.getElementById('image-input').addEventListener('change', function(e) {
@@ -441,8 +441,8 @@ setInterval(updateXrayCount, 2000);
 document.addEventListener('DOMContentLoaded', () => {
     const toggleButton = document.getElementById('toggle-gallery');
     const gallery = document.getElementById('gallery-dropdown');
-    const isPremium = @json($prem); // Pass premium status to JavaScript
-    
+    const isPremium = window.isPremium || 0; // Get premium status from global variable
+
     gallery.style.display = 'none';
 
     toggleButton.addEventListener('click', function () {
