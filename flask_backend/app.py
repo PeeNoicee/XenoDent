@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from inference_sdk import InferenceHTTPClient
 import sys
 
 app = Flask(__name__)
@@ -10,9 +11,15 @@ def add_cors_headers(response):
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
     return response
 
+# Initialize the client with the exact configuration provided
+CLIENT = InferenceHTTPClient(
+    api_url="https://serverless.roboflow.com",
+    api_key="e43qHtrojjqzsab0tgkz"
+)
+
 @app.route('/')
 def index():
-    return {"message": "XenoDent AI Flask Service - Emergency fix", "status": "running"}
+    return {"message": "XenoDent AI Flask Service - Using xenodent-snjmc/18 model", "status": "running"}
 
 @app.route('/predict', methods=['POST', 'OPTIONS'])
 def predict():
@@ -24,42 +31,35 @@ def predict():
         if not request.json or 'image' not in request.json:
             return jsonify({"success": False, "error": "No image data provided"}), 400
 
-        # Return mock dental AI results in the format Laravel expects
-        return jsonify({
-            "success": True,
-            "predictions": [
-                {
-                    "class": "caries",
-                    "confidence": 0.92,
-                    "x": 245,
-                    "y": 180,
-                    "width": 45,
-                    "height": 35
-                },
-                {
-                    "class": "tooth",
-                    "confidence": 0.89,
-                    "x": 198,
-                    "y": 165,
-                    "width": 38,
-                    "height": 42
-                },
-                {
-                    "class": "periapical_lesion",
-                    "confidence": 0.76,
-                    "x": 312,
-                    "y": 225,
-                    "width": 28,
-                    "height": 32
-                }
-            ],
-            "model_used": "xenodent-snjmc/18",
-            "inference_id": "emergency-fix-" + str(hash(str(request.json))),
-            "processing_time": 0.034,
-            "note": "EMERGENCY FIX - Mock dental AI results. Replace with real Roboflow API when deployment issues resolved."
-        })
+        # Get base64 image data (already processed by Laravel)
+        image_b64 = request.json['image']
+
+        print(f"Received image data, length: {len(image_b64)}", file=sys.stderr)
+
+        # Call Roboflow API with the xenodent-snjmc/18 model
+        try:
+            print("Calling Roboflow API with xenodent-snjmc/18 model...", file=sys.stderr)
+            result = CLIENT.infer(image_b64, model_id="xenodent-snjmc/18")
+            print(f"Roboflow API success: {result}", file=sys.stderr)
+
+            return jsonify({
+                "success": True,
+                "predictions": result.get("predictions", []),
+                "model_used": "xenodent-snjmc/18",
+                "inference_id": result.get("inference_id"),
+                "processing_time": result.get("time"),
+                "image_info": result.get("image")
+            })
+
+        except Exception as api_error:
+            print(f"Roboflow API Error: {str(api_error)}", file=sys.stderr)
+            return jsonify({
+                "success": False,
+                "error": f"AI model inference failed: {str(api_error)}"
+            }), 500
 
     except Exception as e:
+        print(f"Flask error: {str(e)}", file=sys.stderr)
         return jsonify({
             "success": False,
             "error": str(e),
