@@ -134,7 +134,7 @@ return [
     */
 
     'xray' => [
-        'upload_limit' => env('XRAY_UPLOAD_LIMIT', 100),
+        'upload_limit' => env('XRAY_UPLOAD_LIMIT', 10),
         'premium_limit' => env('XRAY_PREMIUM_LIMIT', 9999),
     ],
 

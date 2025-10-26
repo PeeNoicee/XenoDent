@@ -41,8 +41,10 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction
 # Install Node.js dependencies and build assets
 RUN npm ci && npm run build
 
-# Install Python dependencies for AI analysis
-RUN pip3 install opencv-python-headless==4.7.0.72 numpy==1.21.6 requests==2.31.0 pillow
+# Create Python virtual environment and install dependencies for AI analysis
+RUN python3 -m venv /opt/venv && \
+    /opt/venv/bin/pip install --upgrade pip && \
+    /opt/venv/bin/pip install opencv-python-headless==4.7.0.72 numpy==1.21.6 requests==2.31.0 pillow
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
