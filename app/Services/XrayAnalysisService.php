@@ -12,7 +12,7 @@ class XrayAnalysisService
     public function __construct()
     {
         $this->pythonScript = app_path('Services/XrayAnalyzer.py');
-        $this->pythonPath = env('PYTHON_PATH', 'python');
+        $this->pythonPath = env('PYTHON_PATH', 'python3');
     }
 
     public function analyzeImage($imagePath)

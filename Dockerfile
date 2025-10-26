@@ -11,6 +11,9 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     libpq-dev \
+    python3 \
+    python3-pip \
+    python3-dev \
     && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get install -y nodejs
 
@@ -37,6 +40,9 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Install Node.js dependencies and build assets
 RUN npm ci && npm run build
+
+# Install Python dependencies for AI analysis
+RUN pip3 install opencv-python-headless==4.7.0.72 numpy==1.21.6 requests==2.31.0 pillow
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \

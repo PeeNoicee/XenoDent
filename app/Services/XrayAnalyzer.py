@@ -46,8 +46,8 @@ def analyze_xray(image_path):
             # Encode image to base64
             base64_image = encode_image_to_base64(image_path)
 
-            # Flask API endpoint
-            flask_api_url = "http://127.0.0.1:5000/predict"  # Using 127.0.0.1 instead of localhost
+            # Flask API endpoint - use environment variable or deployed service
+            flask_api_url = os.environ.get('FLASK_BACKEND_URL', 'https://xenodent-flask.onrender.com/predict')
 
             # Prepare the request payload
             payload = {
