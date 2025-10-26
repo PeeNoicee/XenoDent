@@ -1,7 +1,4 @@
 from flask import Flask, request, jsonify
-import base64
-from PIL import Image
-import io
 
 app = Flask(__name__)
 
@@ -22,30 +19,19 @@ def predict():
         return jsonify({"message": "CORS preflight successful"})
 
     try:
-        # Validate request
-        if not request.json or 'image' not in request.json:
-            return jsonify({"success": False, "error": "No image data provided"}), 400
-        
-        # Base64 decode and process image
-        try:
-            img_data = base64.b64decode(request.json['image'])
-            image = Image.open(io.BytesIO(img_data))
-            
-            return jsonify({
-                "success": True,
-                "message": "Image processed successfully with PIL",
-                "dimensions": {"width": image.width, "height": image.height},
-                "format": image.format,
-                "mode": image.mode
-            })
-            
-        except Exception as img_error:
-            return jsonify({
-                "success": False,
-                "error": f"Image processing failed: {str(img_error)}",
-                "type": type(img_error).__name__
-            }), 400
-            
+        # Basic validation only
+        if not request.json:
+            return jsonify({"success": False, "error": "No JSON data provided"}), 400
+
+        has_image = 'image' in request.json if request.json else False
+
+        return jsonify({
+            "success": True,
+            "message": "Basic request processing works",
+            "has_image": has_image,
+            "json_keys": list(request.json.keys()) if request.json else []
+        })
+
     except Exception as e:
         return jsonify({
             "success": False,
