@@ -39,7 +39,9 @@ Route::match(['get','patch','post'],'/xrayPage', [PageController::class, 'xray']
 Route::match(['get','patch','post'],'/uploadImage', [XrayControl::class, 'upload'])->name('uploadImage');
 Route::match(['get','patch','post'],'/getImages', [XrayControl::class, 'getImages'])->name('getImages');
 
-Route::get('/xray-count', [XrayControl::class, 'getXrayCount'])->name('xray.count');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/xray-count', [XrayControl::class, 'getXrayCount'])->name('xray.count');
+});
 
 Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/how-to-use', [PageController::class, 'howToUse'])->name('how-to-use');
@@ -47,7 +49,7 @@ Route::get('/how-to-use', [PageController::class, 'howToUse'])->name('how-to-use
 Route::patch('/updateUser', [AuthControl::class, 'updateUser'])->name('updateUser');
 
 // Upload routes - need web middleware for CSRF protection
-Route::middleware(['web'])->group(function () {
+Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/analyze', [XrayControl::class, 'analyze'])->name('analyze');
 });
 
