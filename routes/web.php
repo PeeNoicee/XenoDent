@@ -49,7 +49,7 @@ Route::get('/how-to-use', [PageController::class, 'howToUse'])->name('how-to-use
 Route::patch('/updateUser', [AuthControl::class, 'updateUser'])->name('updateUser');
 
 // Upload routes - need web middleware for CSRF protection
-Route::middleware(['web'])->group(function () {
+Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/analyze', [XrayControl::class, 'analyze'])->name('analyze');
 });
 
