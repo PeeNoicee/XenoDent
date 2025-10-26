@@ -1,4 +1,6 @@
 from flask import Flask, request, jsonify
+from inference_sdk import InferenceHTTPClient
+import sys
 
 app = Flask(__name__)
 
@@ -8,6 +10,12 @@ def add_cors_headers(response):
     response.headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
     return response
+
+# Initialize Roboflow API Client
+CLIENT = InferenceHTTPClient(
+    api_url="https://serverless.roboflow.com",
+    api_key="e43qHtrojjqzsab0tgkz"
+)
 
 @app.route('/')
 def index():
@@ -19,18 +27,31 @@ def predict():
         return jsonify({"message": "CORS preflight successful"})
 
     try:
-        # Basic validation only
-        if not request.json:
-            return jsonify({"success": False, "error": "No JSON data provided"}), 400
+        # Validate request
+        if not request.json or 'image' not in request.json:
+            return jsonify({"success": False, "error": "No image data provided"}), 400
 
-        has_image = 'image' in request.json if request.json else False
+        # Get base64 image data (already processed by Laravel)
+        image_b64 = request.json['image']
 
-        return jsonify({
-            "success": True,
-            "message": "Basic request processing works",
-            "has_image": has_image,
-            "json_keys": list(request.json.keys()) if request.json else []
-        })
+        # Call Roboflow API directly
+        try:
+            result = CLIENT.infer(image_b64, model_id="xenodent-snjmc/18")
+
+            return jsonify({
+                "success": True,
+                "predictions": result.get("predictions", []),
+                "model_used": "xenodent-snjmc/18",
+                "inference_id": result.get("inference_id"),
+                "processing_time": result.get("time")
+            })
+
+        except Exception as api_error:
+            print(f"Roboflow API Error: {str(api_error)}", file=sys.stderr)
+            return jsonify({
+                "success": False,
+                "error": f"AI model inference failed: {str(api_error)}"
+            }), 500
 
     except Exception as e:
         return jsonify({
